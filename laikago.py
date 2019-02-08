@@ -50,11 +50,11 @@ for i in range (4):
 	jointOffsets.append(0)
 	jointOffsets.append(-0.7)
 	jointOffsets.append(0.7)
-max_force = 25
+max_force = 15
 maxForceId = p.addUserDebugParameter("maxForce",0,100,max_force)
 
 for j in range (p.getNumJoints(quadruped)):
-        p.changeDynamics(quadruped,j,linearDamping=0.1, angularDamping=0.1)
+        p.changeDynamics(quadruped,j,linearDamping=0, angularDamping=0)
         info = p.getJointInfo(quadruped,j)
         #print(info)
         jointName = info[1]
@@ -139,7 +139,7 @@ p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOff
 p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(0.3*sin2), force=maxForce)
 p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL, -jointOffsets[11]+(0.3*sin4), force=maxForce)
 
-foot_angle = 9
+foot_angle = 15
 foot_angleId = p.addUserDebugParameter("Foot Angle of rotation", 0, 20, foot_angle)
 hip_angle = 6
 hip_angleId = p.addUserDebugParameter("Hip Angle of rotation", 0, 20, hip_angle)
@@ -156,6 +156,9 @@ distance_array = []
 height_array = []
 turn_array = []
 time_array = []
+x_tilt_array = []
+y_tilt_array = []
+z_tilt_array = []
 # plt.scatter(0,1)
 qKey = ord('q')
 pKey = ord('p')
@@ -190,9 +193,12 @@ while (1):
 		distance_array.append(pos_ori[0][1])
 		height_array.append(pos_ori[0][2])
 		turn_array.append(pos_ori[0][0])
-		print(pos_ori[0][0])
-		print(pos_ori[0][1])
-		print(pos_ori[0][2])
+		x_tilt_array.append(pos_ori[1][0])
+		y_tilt_array.append(pos_ori[1][1])
+		z_tilt_array.append(pos_ori[1][2])
+		# print(pos_ori[0][0])
+		# print(pos_ori[0][1])
+		# print(pos_ori[0][2])
 		time_array.append(timer)
 		# p.addUserDebugLine((frf_state[0], frf_state[1], pos_ori[0][2]), (frf_state[0], frf_state[1], pos_ori[0][2]))
 		if (debug):
@@ -221,19 +227,34 @@ while (1):
 	# p.setJointMotorControl2(quadruped, 10,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 7,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 4,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
-plt.subplot(2, 2, 1)
+plt.subplot(3, 3, 1)
 plt.title("Z Distance Travelled Over Time")
 plt.xlabel("Time Step (t)")
 plt.ylabel("Distance")
 plt.plot(time_array, distance_array)
-plt.subplot(2, 2, 2)
+plt.subplot(3, 3, 2)
 plt.title("Height Variation Over Time")
 plt.plot(time_array, height_array)
 plt.ylabel("Height from Center Point")
 plt.xlabel("Time Step (t)")
-plt.subplot(2, 2, 3)
+plt.subplot(3, 3, 3)
 plt.title("Turn in X Over Time")
 plt.plot(time_array, turn_array)
 plt.ylabel("X Value")
+plt.xlabel("Time Step (t)")
+plt.subplot(3, 3, 4)
+plt.title("X Rotation Over Time")
+plt.plot(time_array, x_tilt_array)
+plt.ylabel("X Rotation")
+plt.xlabel("Time Step (t)")
+plt.subplot(3, 3, 5)
+plt.title("Y Rotation Over Time")
+plt.plot(time_array, y_tilt_array)
+plt.ylabel("Y Value")
+plt.xlabel("Time Step (t)")
+plt.subplot(3, 3, 6)
+plt.title("Z Rotation Over Time")
+plt.plot(time_array, z_tilt_array)
+plt.ylabel("Z Value")
 plt.xlabel("Time Step (t)")
 plt.show()
