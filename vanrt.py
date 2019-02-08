@@ -14,8 +14,6 @@ def van_der_pol_oscillator_deriv(x, t):
     return res
 
 
-# osc = odeint(van_der_pol_oscillator_deriv, [1, 1], ts)
-
 start_time = time.time()
 prev_time = time.time()
 count = 1

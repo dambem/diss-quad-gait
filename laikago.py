@@ -1,11 +1,14 @@
 import pybullet as p
 import numpy as np
 import time
+import matplotlib.pyplot as plt
 
+run_simulation = 0
 p.connect(p.GUI)
 plane = p.loadURDF("plane.urdf")
 p.setGravity(0,0,-9.8)
-p.setTimeStep(1./500)
+time_step = 1./500
+p.setTimeStep(time_step)
 p.setDefaultContactERP(0)
 urdfFlags = p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
 # urdfFlags = p.URDF_USE_SELF_COLLISION
@@ -16,7 +19,6 @@ else:
 	quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
 
 #enable collision between lower legs
-
 for j in range (p.getNumJoints(quadruped)):
 		print(p.getJointInfo(quadruped,j))
 
@@ -48,11 +50,11 @@ for i in range (4):
 	jointOffsets.append(0)
 	jointOffsets.append(-0.7)
 	jointOffsets.append(0.7)
-
-maxForceId = p.addUserDebugParameter("maxForce",0,100,40)
+max_force = 25
+maxForceId = p.addUserDebugParameter("maxForce",0,100,max_force)
 
 for j in range (p.getNumJoints(quadruped)):
-        p.changeDynamics(quadruped,j,linearDamping=0, angularDamping=0)
+        p.changeDynamics(quadruped,j,linearDamping=0.1, angularDamping=0.1)
         info = p.getJointInfo(quadruped,j)
         #print(info)
         jointName = info[1]
@@ -62,7 +64,7 @@ for j in range (p.getNumJoints(quadruped)):
 
 
 p.getCameraImage(480,320)
-p.setRealTimeSimulation(0)
+p.setRealTimeSimulation(run_simulation)
 
 joints=[]
 #
@@ -96,7 +98,7 @@ for j in range (p.getNumJoints(quadruped)):
         # if (jointType==p.JOINT_PRISMATIC or jointType==p.JOINT_REVOLUTE):
         #         paramIds.append(p.addUserDebugParameter(jointName.decode("utf-8"),-4,4,(js[0]-jointOffsets[j])/jointDirections[j]))
 
-
+phase_time = 175
 front_right_hip = 1
 front_left_hip = 4
 back_right_hip = 7
@@ -114,6 +116,9 @@ back_left = 0
 # targetPos = p.readUserDebugParameter(c)
 maxForce = p.readUserDebugParameter(maxForceId)
 
+
+phaseTimeId = p.addUserDebugParameter("Phase Timestep Multiplier",phase_time-(phase_time/2) ,phase_time+(phase_time/2),phase_time)
+
 jointOffsets[1] -= -0.5
 jointOffsets[4] -= -0.5
 jointOffsets[7] -= -0.5
@@ -122,8 +127,8 @@ sin =  np.sin(0)
 sin2 = np.sin(np.pi*0.5)
 sin3 = np.sin(np.pi)
 sin4 = np.sin(np.pi*3/4)
-
-p.setRealTimeSimulation(1)
+run_simulation = 1
+p.setRealTimeSimulation(run_simulation)
 # Begins timer to allow for sin function to work (Will replace with vanderpol in future)
 p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOffsets[1], force=maxForce)
 p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL, -jointOffsets[4], force=maxForce)
@@ -133,49 +138,102 @@ p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, -jointOf
 p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5]-(0.3*sin3), force=maxForce)
 p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(0.3*sin2), force=maxForce)
 p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL, -jointOffsets[11]+(0.3*sin4), force=maxForce)
-time.sleep(1);
-start = time.time();
+
+foot_angle = 9
+foot_angleId = p.addUserDebugParameter("Foot Angle of rotation", 0, 20, foot_angle)
+hip_angle = 6
+hip_angleId = p.addUserDebugParameter("Hip Angle of rotation", 0, 20, hip_angle)
+time.sleep(5);
 
 def deg_to_rad(deg):
 	return deg*(np.pi/180)
-phase_time = 20
-foot_angle = deg_to_rad(9)
-hip_angle = deg_to_rad(6)
+
+
 foot_debug = deg_to_rad(180)
 hip_debug = deg_to_rad(60)
-maxForceId = p.addUserDebugParameter("Limb Velocity",0,100,phase_time)
+timer = 0
+distance_array = []
+height_array = []
+turn_array = []
+time_array = []
+# plt.scatter(0,1)
+qKey = ord('q')
+pKey = ord('p')
+
 while (1):
-	end = time.time()
-	maxForce = p.readUserDebugParameter(maxForceId)
-	sin = np.sin((start-end)*phase_time)
-	sin2 = np.sin(np.pi*0.5+(start-end)*phase_time)
-	sin3 = np.sin(np.pi*1/4+(start-end)*phase_time)
-	sin4 = np.sin(np.pi*3/4+(start-end)*phase_time)
-	sin_debug = np.sin(start-end)
-	# Angles are in Radians (PI = 360)
+	keys = p.getKeyboardEvents()
+	if qKey in keys and keys[qKey]&p.KEY_WAS_TRIGGERED:
+	    break;
+	if pKey in keys and keys[pKey]&p.KEY_WAS_TRIGGERED:
+		run_simulation = not run_simulation
+		p.setRealTimeSimulation(run_simulation)
+	if (run_simulation):
+		timer += time_step
+		maxForce = p.readUserDebugParameter(maxForceId)
+		phase_time = p.readUserDebugParameter(phaseTimeId)
+		foot_angle = deg_to_rad(p.readUserDebugParameter(foot_angleId))
+		hip_angle = deg_to_rad(p.readUserDebugParameter(hip_angleId))
+		sin = np.sin((timer)*phase_time)
+		sin2 = np.sin(np.pi*0.5+(timer)*phase_time)
+		sin3 = np.sin(np.pi*1/4+(timer)*phase_time)
+		sin4 = np.sin(np.pi*3/4+(timer)*phase_time)
+		sin_debug = np.sin(timer)
+		pos_ori = p.getBasePositionAndOrientation(quadruped)
+
+		# plt.scatter(pos_ori[0][0]+pos_ori[0][1]+pos_ori[0][2], counter)
+		# plt.pause(0.000001)
+		# print(p.getBasePositionAndOrientation(quadruped))
+		# print (pos_ori[0][0])
+		# Angles are in Radians (PI = 360)
+		# frf_state = p.getJointState(quadruped, front_right_foot)
+		p.addUserDebugLine((pos_ori[0][0], pos_ori[0][1], pos_ori[0][2]), (pos_ori[0][0]+0.1, pos_ori[0][1], pos_ori[0][2]))
+		distance_array.append(pos_ori[0][1])
+		height_array.append(pos_ori[0][2])
+		turn_array.append(pos_ori[0][0])
+		print(pos_ori[0][0])
+		print(pos_ori[0][1])
+		print(pos_ori[0][2])
+		time_array.append(timer)
+		# p.addUserDebugLine((frf_state[0], frf_state[1], pos_ori[0][2]), (frf_state[0], frf_state[1], pos_ori[0][2]))
+		if (debug):
+			# p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, foot_debug*sin_debug, force=maxForce)
+			p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, hip_debug*sin_debug, force=maxForce)
+			p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL, hip_debug*sin_debug, force=maxForce)
+			p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, foot_debug, force=maxForce)
+			p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, foot_debug, force=maxForce)
+		# Begins timer to allow for sin
+		else:
+			p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL,-jointOffsets[2]+(foot_angle*sin), force=maxForce)
+			p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5]+(foot_angle*sin3), force=maxForce)
+			p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(foot_angle*sin2), force=maxForce)
+			p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL,  -jointOffsets[11]+(foot_angle*sin4), force=maxForce)
+			#
+			p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOffsets[1]+(hip_angle*sin), force=maxForce)
+			p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL,  -jointOffsets[4]+(hip_angle*sin3), force=maxForce)
+			p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL,  -jointOffsets[7]+(hip_angle*sin2), force=maxForce)
+			p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,   -jointOffsets[10]+(hip_angle*sin4), force=maxForce)
+			p.setJointMotorControl2(quadruped, front_left,p.POSITION_CONTROL,  0, force=maxForce)
+			p.setJointMotorControl2(quadruped, front_right,p.POSITION_CONTROL,  0, force=maxForce)
+			p.setJointMotorControl2(quadruped, back_left,p.POSITION_CONTROL,  0, force=maxForce)
+			p.setJointMotorControl2(quadruped, back_right,p.POSITION_CONTROL,  0, force=maxForce)
 
 
-	if (debug):
-		# p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, foot_debug*sin_debug, force=maxForce)
-		p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, hip_debug*sin_debug, force=maxForce)
-		p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL, hip_debug*sin_debug, force=maxForce)
-		p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, foot_debug, force=maxForce)
-		p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, foot_debug, force=maxForce)
-	# Begins timer to allow for sin
-	else:
-		p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL,-jointOffsets[2]+(foot_angle*sin), force=maxForce)
-		p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5]+(foot_angle*sin3), force=maxForce)
-		p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(foot_angle*sin2), force=maxForce)
-		p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL,  -jointOffsets[11]+(foot_angle*sin4), force=maxForce)
-		#
-		p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOffsets[1]+(hip_angle*sin), force=maxForce)
-		p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL,  -jointOffsets[4]+(hip_angle*sin3), force=maxForce)
-		p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL,  -jointOffsets[7]+(hip_angle*sin2), force=maxForce)
-		p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,   -jointOffsets[10]+(hip_angle*sin4), force=maxForce)
-		p.setJointMotorControl2(quadruped, front_left,p.POSITION_CONTROL,  0, force=maxForce)
-		p.setJointMotorControl2(quadruped, front_right,p.POSITION_CONTROL,  0, force=maxForce)
-		p.setJointMotorControl2(quadruped, back_left,p.POSITION_CONTROL,  0, force=maxForce)
-		p.setJointMotorControl2(quadruped, back_right,p.POSITION_CONTROL,  0, force=maxForce)
 	# p.setJointMotorControl2(quadruped, 10,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 7,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 4,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
+plt.subplot(2, 2, 1)
+plt.title("Z Distance Travelled Over Time")
+plt.xlabel("Time Step (t)")
+plt.ylabel("Distance")
+plt.plot(time_array, distance_array)
+plt.subplot(2, 2, 2)
+plt.title("Height Variation Over Time")
+plt.plot(time_array, height_array)
+plt.ylabel("Height from Center Point")
+plt.xlabel("Time Step (t)")
+plt.subplot(2, 2, 3)
+plt.title("Turn in X Over Time")
+plt.plot(time_array, turn_array)
+plt.ylabel("X Value")
+plt.xlabel("Time Step (t)")
+plt.show()
