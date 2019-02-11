@@ -2,12 +2,44 @@ import pybullet as p
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+import datetime
+
+# Initial Configuration (Can Later Be Changed Through User Parameters)
+run_array = []
+gravity = -9.8
+time_step = 1./500
+phase_time = 175
+foot_angle = 15
+hip_angle = 6
+max_force = 15
+
+# Hip Configurations (SET, DO NOT CHANGE)
+front_right_hip = 1
+front_left_hip = 4
+back_right_hip = 7
+back_left_hip = 10
+front_right_foot = 2
+front_left_foot = 5
+back_right_foot = 8
+back_left_foot = 11
+front_right = 3
+front_left = 6
+back_right = 9
+back_left = 0
+
+# Initial Runtime Array configuration
+run_array.append(["gravity", [[gravity, 0]]])
+run_array.append(["time_step", [[time_step, 0]]])
+run_array.append(["phase_time", [[phase_time, 0]]])
+run_array.append(["foot_angle", [[foot_angle, 0]]])
+run_array.append(["hip_angle", [[hip_angle, 0]]])
+run_array.append(["max_force", [[foot_angle, 0]]])
 
 run_simulation = 0
 p.connect(p.GUI)
 plane = p.loadURDF("plane.urdf")
-p.setGravity(0,0,-9.8)
-time_step = 1./500
+p.setGravity(0, 0, gravity)
+
 p.setTimeStep(time_step)
 p.setDefaultContactERP(0)
 urdfFlags = p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
@@ -50,7 +82,6 @@ for i in range (4):
 	jointOffsets.append(0)
 	jointOffsets.append(-0.7)
 	jointOffsets.append(0.7)
-max_force = 15
 maxForceId = p.addUserDebugParameter("maxForce",0,100,max_force)
 
 for j in range (p.getNumJoints(quadruped)):
@@ -98,19 +129,7 @@ for j in range (p.getNumJoints(quadruped)):
         # if (jointType==p.JOINT_PRISMATIC or jointType==p.JOINT_REVOLUTE):
         #         paramIds.append(p.addUserDebugParameter(jointName.decode("utf-8"),-4,4,(js[0]-jointOffsets[j])/jointDirections[j]))
 
-phase_time = 175
-front_right_hip = 1
-front_left_hip = 4
-back_right_hip = 7
-back_left_hip = 10
-front_right_foot = 2
-front_left_foot = 5
-back_right_foot = 8
-back_left_foot = 11
-front_right = 3
-front_left = 6
-back_right = 9
-back_left = 0
+
 # c = paramIds[i]
 #
 # targetPos = p.readUserDebugParameter(c)
@@ -118,7 +137,6 @@ maxForce = p.readUserDebugParameter(maxForceId)
 
 
 phaseTimeId = p.addUserDebugParameter("Phase Timestep Multiplier",phase_time-(phase_time/2) ,phase_time+(phase_time/2),phase_time)
-
 jointOffsets[1] -= -0.5
 jointOffsets[4] -= -0.5
 jointOffsets[7] -= -0.5
@@ -138,10 +156,7 @@ p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, -jointOf
 p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5]-(0.3*sin3), force=maxForce)
 p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(0.3*sin2), force=maxForce)
 p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL, -jointOffsets[11]+(0.3*sin4), force=maxForce)
-
-foot_angle = 15
 foot_angleId = p.addUserDebugParameter("Foot Angle of rotation", 0, 20, foot_angle)
-hip_angle = 6
 hip_angleId = p.addUserDebugParameter("Hip Angle of rotation", 0, 20, hip_angle)
 time.sleep(5);
 
@@ -162,7 +177,7 @@ z_tilt_array = []
 # plt.scatter(0,1)
 qKey = ord('q')
 pKey = ord('p')
-
+run_string= maxForce + phase_time + foot_angle + hip_angle
 while (1):
 	keys = p.getKeyboardEvents()
 	if qKey in keys and keys[qKey]&p.KEY_WAS_TRIGGERED:
@@ -172,6 +187,8 @@ while (1):
 		p.setRealTimeSimulation(run_simulation)
 	if (run_simulation):
 		timer += time_step
+		if (maxForce != p.readUserDebugParameter(maxForceId)):
+			run_array[5][1].append([p.readUserDebugParameter(maxForceId), timer])
 		maxForce = p.readUserDebugParameter(maxForceId)
 		phase_time = p.readUserDebugParameter(phaseTimeId)
 		foot_angle = deg_to_rad(p.readUserDebugParameter(foot_angleId))
@@ -227,6 +244,19 @@ while (1):
 	# p.setJointMotorControl2(quadruped, 10,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 7,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 4,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
+
+run_name = 'laikago-sin'+datetime.datetime.today().strftime('%H-%M-%s-%d-%m-%y')
+run_log = open(run_name+"log.txt", "w+")
+for items in run_array:
+	string = ""
+	string = str(items[0])+": [ "
+	for specific in items[1]:
+		string += "[V: " + str(specific[0]) + " T: " + str(specific[1]) + "]"
+	string += " ]\n"
+	run_log.write(string)
+run_log.close()
+
+plt.figure(figsize=(15,15))
 plt.subplot(3, 3, 1)
 plt.title("Z Distance Travelled Over Time")
 plt.xlabel("Time Step (t)")
@@ -257,4 +287,5 @@ plt.title("Z Rotation Over Time")
 plt.plot(time_array, z_tilt_array)
 plt.ylabel("Z Value")
 plt.xlabel("Time Step (t)")
+plt.savefig(run_name, dpi=250)
 plt.show()
