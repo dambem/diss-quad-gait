@@ -136,7 +136,7 @@ for j in range (p.getNumJoints(quadruped)):
 maxForce = p.readUserDebugParameter(maxForceId)
 
 
-phaseTimeId = p.addUserDebugParameter("Phase Timestep Multiplier",phase_time-(phase_time/2) ,phase_time+(phase_time/2),phase_time)
+phaseTimeId = p.addUserDebugParameter("Frequency Multiplier",phase_time-(phase_time/2) ,phase_time+(phase_time/2),phase_time)
 jointOffsets[1] -= -0.5
 jointOffsets[4] -= -0.5
 jointOffsets[7] -= -0.5
