@@ -8,7 +8,7 @@ import datetime
 run_array = []
 gravity = -9.8
 time_step = 1./500
-phase_time = 175
+frequency_multiplier = 175
 foot_angle = 15
 hip_angle = 6
 max_force = 15
@@ -22,18 +22,18 @@ front_right_foot = 2
 front_left_foot = 5
 back_right_foot = 8
 back_left_foot = 11
-front_right = 3
-front_left = 6
-back_right = 9
-back_left = 0
+front_right_shoulder = 3
+front_left_shoulder = 6
+back_right_shoulder = 9
+back_left_shoulder = 0
 
 # Initial Runtime Array configuration
-run_array.append(["gravity", [[gravity, 0]]])
-run_array.append(["time_step", [[time_step, 0]]])
-run_array.append(["phase_time", [[phase_time, 0]]])
-run_array.append(["foot_angle", [[foot_angle, 0]]])
-run_array.append(["hip_angle", [[hip_angle, 0]]])
-run_array.append(["max_force", [[foot_angle, 0]]])
+run_array.append(["gravity", [[gravity, 0]], 'kg/s^2'])
+run_array.append(["time_step", [[time_step, 0]], 's'])
+run_array.append(["frequency_multiplier", [[frequency_multiplier, 0]], 'n/a'])
+run_array.append(["foot_angle", [[foot_angle, 0]], 'deg'])
+run_array.append(["hip_angle", [[hip_angle, 0]], 'deg'])
+run_array.append(["max_force", [[foot_angle, 0]], 'deg'])
 
 run_simulation = 0
 p.connect(p.GUI)
@@ -49,6 +49,12 @@ if (debug):
 	quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=True)
 else:
 	quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
+
+base_dynamics_info = p.getDynamicsInfo(quadruped, -1)
+frh_dynamics_info = p.getDynamicsInfo(quadruped, front_right_hip)
+flh_dynamics_info = p.getDynamicsInfo(quadruped, front_left_hip)
+
+run_array.append(['base mass', [[base_dynamics_info[0], 0]]])
 
 #enable collision between lower legs
 for j in range (p.getNumJoints(quadruped)):
@@ -136,7 +142,7 @@ for j in range (p.getNumJoints(quadruped)):
 maxForce = p.readUserDebugParameter(maxForceId)
 
 
-phaseTimeId = p.addUserDebugParameter("Frequency Multiplier",phase_time-(phase_time/2) ,phase_time+(phase_time/2),phase_time)
+phaseTimeId = p.addUserDebugParameter("Frequency Multiplier",frequency_multiplier-(frequency_multiplier/2) ,frequency_multiplier+(frequency_multiplier/2),frequency_multiplier)
 jointOffsets[1] -= -0.5
 jointOffsets[4] -= -0.5
 jointOffsets[7] -= -0.5
@@ -177,7 +183,8 @@ z_tilt_array = []
 # plt.scatter(0,1)
 qKey = ord('q')
 pKey = ord('p')
-run_string= maxForce + phase_time + foot_angle + hip_angle
+run_string= maxForce + frequency_multiplier + foot_angle + hip_angle
+
 while (1):
 	keys = p.getKeyboardEvents()
 	if qKey in keys and keys[qKey]&p.KEY_WAS_TRIGGERED:
@@ -190,13 +197,18 @@ while (1):
 		if (maxForce != p.readUserDebugParameter(maxForceId)):
 			run_array[5][1].append([p.readUserDebugParameter(maxForceId), timer])
 		maxForce = p.readUserDebugParameter(maxForceId)
-		phase_time = p.readUserDebugParameter(phaseTimeId)
+		frequency_multiplier = p.readUserDebugParameter(phaseTimeId)
 		foot_angle = deg_to_rad(p.readUserDebugParameter(foot_angleId))
 		hip_angle = deg_to_rad(p.readUserDebugParameter(hip_angleId))
-		sin = np.sin((timer)*phase_time)
-		sin2 = np.sin(np.pi*0.5+(timer)*phase_time)
-		sin3 = np.sin(np.pi*1/4+(timer)*phase_time)
-		sin4 = np.sin(np.pi*3/4+(timer)*phase_time)
+		sin = np.sin((timer)*frequency_multiplier)
+		sin2 = np.sin(np.pi*0.5+(timer)*frequency_multiplier)
+		sin3 = np.sin(np.pi*1/4+(timer)*frequency_multiplier)
+		sin4 = np.sin(np.pi*3/4+(timer)*frequency_multiplier)
+
+		# sin3 = np.sin((timer)*frequency_multiplier)
+		# sin4 = np.sin(np.pi*0.5+(timer)*frequency_multiplier)
+		# sin = np.sin(np.pi*1/4+(timer)*frequency_multiplier)
+		# sin2 = np.sin(np.pi*3/4+(timer)*frequency_multiplier)
 		sin_debug = np.sin(timer)
 		pos_ori = p.getBasePositionAndOrientation(quadruped)
 
@@ -235,17 +247,17 @@ while (1):
 			p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL,  -jointOffsets[4]+(hip_angle*sin3), force=maxForce)
 			p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL,  -jointOffsets[7]+(hip_angle*sin2), force=maxForce)
 			p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,   -jointOffsets[10]+(hip_angle*sin4), force=maxForce)
-			p.setJointMotorControl2(quadruped, front_left,p.POSITION_CONTROL,  0, force=maxForce)
-			p.setJointMotorControl2(quadruped, front_right,p.POSITION_CONTROL,  0, force=maxForce)
-			p.setJointMotorControl2(quadruped, back_left,p.POSITION_CONTROL,  0, force=maxForce)
-			p.setJointMotorControl2(quadruped, back_right,p.POSITION_CONTROL,  0, force=maxForce)
+			p.setJointMotorControl2(quadruped, front_left_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
+			p.setJointMotorControl2(quadruped, front_right_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
+			p.setJointMotorControl2(quadruped, back_left_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
+			p.setJointMotorControl2(quadruped, back_right_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
 
 
 	# p.setJointMotorControl2(quadruped, 10,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 7,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 	# p.setJointMotorControl2(quadruped, 4,p.POSITION_CONTROL,jointDirections[i]*targetPos+sin+jointOffsets[i], force=maxForce)
 
-run_name = 'laikago-sin'+datetime.datetime.today().strftime('%H-%M-%s-%d-%m-%y')
+run_name = 'laikago-sin-'+datetime.datetime.today().strftime('%YYYY-%MM-%DD-%HH-%mm-%ss')+"-"
 run_log = open(run_name+"log.txt", "w+")
 for items in run_array:
 	string = ""
