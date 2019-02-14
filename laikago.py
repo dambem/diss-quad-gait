@@ -3,7 +3,44 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import datetime
+from scipy.integrate import odeint
 
+lamb = [  [0,-0.2,-0.2,-0.2],
+          [-0.2, 0, -0.2, -0.2],
+          [-0.2, -0.2, 0, -0.2],
+          [-0.2, -0.2, -0.2, 0]]
+
+lamb2 = [[0, -0.2, 0.2, -0.2],
+         [-0.2, 0, -0.2, 0.2],
+         [0.2, -0.2, 0, -0.2],
+         [-0.2, 0.2, -0.2, 0]]
+
+lamb_control = [[0,0,0,0],
+                [0,0,0,0],
+                [0,0,0,0],
+                [0,0,0,0]]
+current_i = 0
+def van_der_pol_oscillator_deriv(x, t):
+    x0 = x[1]
+    x1 = mu * ((p_v - (x[0] ** 2.0)) * x0) - x[0]*w
+    res = np.array([x0, x1])
+    return res
+
+def van_der_pol_coupled(x, t):
+    x0 = x[1]
+    x_ai = x[0]
+    for j in range(4):
+        x_ai += (lamb_control[current_i][j]*start_x[j])
+    x1 = mu * ((p_v - (x_ai** 2.0))* x0) - x_ai*w
+    res = np.array([x0, x1])
+    return res
+start_y = [1,1,1,1]
+start_x = [0,0,0,0]
+new_y = [1,1,1,1]
+new_x = [0,0,0,0]
+time_step = 0.05
+
+count = 0
 # Initial Configuration (Can Later Be Changed Through User Parameters)
 run_array = []
 gravity = -9.8
@@ -185,6 +222,10 @@ qKey = ord('q')
 pKey = ord('p')
 run_string= maxForce + frequency_multiplier + foot_angle + hip_angle
 
+w = 20
+mu = 1
+p_v = 2
+w = 20
 while (1):
 	keys = p.getKeyboardEvents()
 	if qKey in keys and keys[qKey]&p.KEY_WAS_TRIGGERED:
@@ -200,6 +241,7 @@ while (1):
 		frequency_multiplier = p.readUserDebugParameter(phaseTimeId)
 		foot_angle = deg_to_rad(p.readUserDebugParameter(foot_angleId))
 		hip_angle = deg_to_rad(p.readUserDebugParameter(hip_angleId))
+
 		sin = np.sin((timer)*frequency_multiplier)
 		sin2 = np.sin(np.pi*0.5+(timer)*frequency_multiplier)
 		sin3 = np.sin(np.pi*1/4+(timer)*frequency_multiplier)

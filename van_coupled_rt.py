@@ -29,7 +29,7 @@ def van_der_pol_coupled(x, t):
     x0 = x[1]
     x_ai = x[0]
     for j in range(4):
-        x_ai += (lamb_control[j][current_i]*start_x[j])
+        x_ai += (lamb_control[current_i][j]*start_x[j])
     x1 = mu * ((p - (x_ai** 2.0))* x0) - x_ai*w
     res = np.array([x0, x1])
     return res
@@ -49,8 +49,8 @@ while (count <= 10):
     count+= time_step
     current_time = time.time()
     mu = 1
-    p = 5
-    w = 30
+    p = 2
+    w = 20
     x_list  = []
     for i in range(4):
         current_i = i
