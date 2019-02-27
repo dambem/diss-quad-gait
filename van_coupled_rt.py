@@ -24,64 +24,74 @@ def van_der_pol_oscillator_deriv(x, t):
     x1 = mu * ((p - (x[0] ** 2.0)) * x0) - x[0]*w
     res = np.array([x0, x1])
     return res
+oscillator_values = [0,0,0,0]
 
 def van_der_pol_coupled(x, t):
     x0 = x[1]
     x_ai = x[0]
     for j in range(4):
-        x_ai += (lamb_control[current_i][j]*start_x[j])
-    x1 = mu * ((p - (x_ai** 2.0))* x0) - x_ai*w
+        x_ai += (lamb[current_i][j]*oscillator_values[j])
+    x_ai = x_ai
+    x1 = x[0]
+    x0 =  oscillator_values[current_i] + mu * ((p - (x_ai** 2.0))* x0) - x_ai*w
     res = np.array([x0, x1])
     return res
 
 start_time = time.time()
 prev_time = time.time()
-time_step = 0.05
+time_step = 0.1
 
 count = 0
-
+new_oscillator_values = [0,0,0,0]
 start_y = [1,1,1,1]
 start_x = [0,0,0,0]
 new_y = [1,1,1,1]
 new_x = [0,0,0,0]
-while (count <= 10):
-    w = 20
+while (count <= 20):
     count+= time_step
-    current_time = time.time()
     mu = 1
     p = 2
-    w = 20
-    x_list  = []
+    w = 10
     for i in range(4):
         current_i = i
-        osc= odeint(van_der_pol_coupled, [start_y[i], start_x[i]], [count-time_step, count])
-        x = osc[1][1]
-        y = osc[1][0]
-        x_list.append(x)
-        new_y[i] = y
+        for j in range(4):
+            osc= odeint(van_der_pol_oscillator_deriv, [start_y[i], start_x[i]], [count-time_step, count])
+            oscillator_values[j] = osc[1][1]
+        # oscillator_values = new_oscillator_values
+        osc2= odeint(van_der_pol_coupled, [start_y[i], start_x[i]], [count-time_step, count])
+        x = osc2[1][1]
+        y = osc2[1][0]
         new_x[i] = x
-        if (i == 0):
-            plt.subplot(2, 1, 1)
-            plt.scatter(y, x, c='red')
-            plt.subplot(2, 1, 2)
-            plt.scatter(current_time, x, c='red')
+        new_y[i] = y
+        # start_y[i] = y
+        # start_x[i] = x
+        # print (oscillator_values)
+        # if (i == 0):
+        # plt.subplot(2, 1, 1)
+        # plt.scatter(y, x, c='red')
+        # plt.subplot(2, 1, 2)
         if (i == 1):
-            plt.subplot(2, 1, 1)
+            # plt.subplot(2, 1, 1)
             plt.scatter(y, x, c='green')
-            plt.subplot(2, 1, 2)
-            plt.scatter(current_time, x, c='green')
-        if (i == 2):
-            plt.subplot(2, 1, 1)
-            plt.scatter(y, x, c='blue')
-            plt.subplot(2, 1, 2)
-            plt.scatter(current_time, x, c='blue')
-        if (i == 3):
-            plt.subplot(2, 1, 1)
-            plt.scatter(y, x, c='yellow')
-            plt.subplot(2, 1, 2)
-            plt.scatter(current_time, x, c='yellow')
+            # plt.subplot(2, 1, 2)
+        # plt.scatter(count, oscillator_values[1], c='green')
+        # if (i == 2):
+        #     # plt.subplot(2, 1, 1)
+        #     # plt.scatter(y, x, c='blue')
+        #     # plt.subplot(2, 1, 2)
+        #     plt.scatter(count, x, c='blue')
+        # if (i == 3):
+        #     # plt.subplot(2, 1, 1)
+        #     # plt.scatter(y, x, c='yellow')
+        #     # plt.subplot(2, 1, 2)
+        #     plt.scatter(count, x, c='red')
+            # plt.scatter(count, oscillator_values[1], c='blue')
+    # print (new_)
     start_y = new_y
     start_x = new_x
+    # plt.scatter(count, oscillator_values[0], c='red')
+
+    plt.pause(0.001)
 
     # for i in range(4):
     #     x_ai = x_list[i]
