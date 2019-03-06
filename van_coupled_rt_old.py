@@ -41,21 +41,21 @@ def van_der_pol_coupled(x, t):
 
 start_time = time.time()
 prev_time = time.time()
-time_step = 0.5
+time_step = 0.01
 
-count = 5
+count = 0
 
 start_y = [np.pi, np.pi, np.pi, np.pi]
 start_x = [0,0,0,0]
 new_y = [np.pi, np.pi, np.pi, np.pi]
 new_x = [0,0,0,0]
 oscillator_values = []
-while (count <= 500):
+while (count <= 10):
     count+= time_step
     current_time = time.time()
     mu = 1
     p = 2
-    w = 10
+    w = 20
     x_list  = []
     for i in range(4):
         current_i = i

@@ -5,42 +5,18 @@ import matplotlib.pyplot as plt
 import datetime
 from scipy.integrate import odeint
 
-lamb = [  [0,-0.2,-0.2,-0.2],
-          [-0.2, 0, -0.2, -0.2],
-          [-0.2, -0.2, 0, -0.2],
-          [-0.2, -0.2, -0.2, 0]]
-
-lamb2 = [[0, -0.2, 0.2, -0.2],
-         [-0.2, 0, -0.2, 0.2],
-         [0.2, -0.2, 0, -0.2],
-         [-0.2, 0.2, -0.2, 0]]
-
-lamb_control = [[0,0,0,0],
-                [0,0,0,0],
-                [0,0,0,0],
-                [0,0,0,0]]
-current_i = 0
-def van_der_pol_oscillator_deriv(x, t):
-    x0 = x[1]
-    x1 = mu * ((p_v - (x[0] ** 2.0)) * x0) - x[0]*w
-    res = np.array([x0, x1])
-    return res
-def van_der_pol_coupled(x, t):
-    x0 = x[1]
-    x_ai =x[0]
-    for j in range(4):
-        x_ai += x[0]-(lamb[current_i][j]*start_x[j])
-    # x_ai *= time_step
-    # osc = odeint(van_der_pol_oscillator_deriv, [x[0], x[1]], [t-time_step, t])
-    x1 =  mu * ((p_v - (x_ai** 2.0))* x0) - x_ai*w
-    res = np.array([x0, x1])
-    return res
 
 
-start_y = [np.pi, np.pi, np.pi, np.pi]
+
+start_y = [1,1,1,1]
 start_x = [0,0,0,0]
-new_y = [np.pi, np.pi, np.pi, np.pi]
+new_y = [1,1,1,1]
 new_x = [0,0,0,0]
+
+start_y2 = [1,1,1,1]
+start_x2 = [0,0,0,0]
+new_y2 = [1,1,1,1]
+new_x2 = [0,0,0,0]
 count = 0
 # Initial Configuration (Can Later Be Changed Through User Parameters)
 run_array = []
@@ -49,11 +25,11 @@ time_step = 1./500
 frequency_multiplier = 175
 foot_angle = 15
 hip_angle = 6
-max_force = 90
-w = 1
+max_force = 30
+w = 20
 mu = 1
-p_v = 1
-# Hip Configurations (SET, DO NOT CHANGE)
+p_v = 2
+# Hip Configurations (SET, DO NOT CHANGE)start_x
 front_right_hip = 1
 front_left_hip = 4
 back_right_hip = 7
@@ -133,7 +109,7 @@ for i in range (4):
 maxForceId = p.addUserDebugParameter("maxForce",0,100,max_force)
 
 for j in range (p.getNumJoints(quadruped)):
-        p.changeDynamics(quadruped,j,linearDamping=0, angularDamping=0)
+        p.changeDynamics(quadruped,j,linearDamping=0.1, angularDamping=0.1)
         info = p.getJointInfo(quadruped,j)
         #print(info)
         jointName = info[1]
@@ -150,7 +126,7 @@ joints=[]
 
 
 for j in range (p.getNumJoints(quadruped)):
-        p.changeDynamics(quadruped,j,linearDamping=0.5, angularDamping=0.5)
+        p.changeDynamics(quadruped,j,linearDamping=0, angularDamping=0)
         info = p.getJointInfo(quadruped,j)
         js = p.getJointState(quadruped,j)
         # print(info)
@@ -173,10 +149,10 @@ jointOffsets[1] -= -0.5
 jointOffsets[4] -= -0.5
 jointOffsets[7] -= -0.5
 jointOffsets[10] -= -0.5
-sin =  np.sin(0)
-sin2 = np.sin(np.pi*0.5)
-sin3 = np.sin(np.pi)
-sin4 = np.sin(np.pi*3/4)
+# sin =  np.sin(0)
+# sin2 = np.sin(np.pi*0.5)
+# sin3 = np.sin(np.pi)
+# sin4 = np.sin(np.pi*3/4)
 run_simulation = 1
 p.setRealTimeSimulation(run_simulation)
 # Begins timer to allow for sin function to work (Will replace with vanderpol in future)
@@ -184,10 +160,10 @@ p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOff
 p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL, -jointOffsets[4], force=maxForce)
 p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL, -jointOffsets[7], force=maxForce)
 p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,  -jointOffsets[10], force=maxForce)
-p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, -jointOffsets[2]-(0.3*sin), force=maxForce)
-p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5]-(0.3*sin3), force=maxForce)
-p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(0.3*sin2), force=maxForce)
-p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL, -jointOffsets[11]+(0.3*sin4), force=maxForce)
+p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, -jointOffsets[2], force=maxForce)
+p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5], force=maxForce)
+p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8], force=maxForce)
+p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL, -jointOffsets[11], force=maxForce)
 foot_angleId = p.addUserDebugParameter("Foot Angle of rotation", 0, 20, foot_angle)
 hip_angleId = p.addUserDebugParameter("Hip Angle of rotation", 0, 20, hip_angle)
 p.useFixedBase = True
@@ -207,6 +183,52 @@ time_array = []
 x_tilt_array = []
 y_tilt_array = []
 z_tilt_array = []
+lamb_trot = -0.2
+lamb_pace = -0.2
+lamb_bound = -0.2
+
+lamb = [  [0,lamb_bound,lamb_pace,lamb_trot],
+          [lamb_bound, 0, lamb_trot, lamb_pace],
+          [lamb_pace, lamb_trot, 0, lamb_bound],
+          [lamb_trot, lamb_pace, lamb_bound, 0]]
+
+lambId = p.addUserDebugParameter("Lamb pace",lamb_pace, -lamb_pace, lamb_pace)
+lambBoundId = p.addUserDebugParameter("Lamb Bound",lamb_bound, -lamb_bound, lamb_bound)
+lambTrotId = p.addUserDebugParameter("Lamb Trot", lamb_trot, -lamb_trot, lamb_trot)
+
+current_i = 0
+current_i2 = 0
+
+def van_der_pol_oscillator_deriv(x, t):
+    x0 = x[1]
+    x1 = mu * ((p_v - (x[0] ** 2.0)) * x0) - x[0]*w
+    res = np.array([x0, x1])
+    return res
+
+def van_der_pol_coupled(x, t):
+    # global chosen_x
+    x0 = x[1]
+    x_ai =x[0]
+    for j in range(4):
+        x_ai += x[0]-(lamb[current_i][j]*chosen_x[j])
+    # x_ai *= time_step
+    # osc = odeint(van_der_pol_oscillator_deriv, [x[0], x[1]], [t-time_step, t])
+    x1 =  mu * ((p_v - (x_ai** 2.0))* x0) - x_ai*w + (0.5+feedback[current_i])
+    res = np.array([x0, x1])
+    return res
+
+def van_der_pol_coupled2(x, t):
+    # global chosen_x2
+    x0 = x[1]
+    x_ai =x[0]
+    # print(current_i2)
+    for j in range(4):
+        x_ai += x[0]-(lamb[current_i2][j]*chosen_x2[j])
+    # x_ai *= time_step
+    # osc = odeint(van_der_pol_oscillator_deriv, [x[0], x[1]], [t-time_step, t])
+    x1 =  mu * ((p_v - (x_ai** 2.0))* x0) - x_ai*w + feedback2[current_i2]
+    res = np.array([x0, x1])
+    return res
 
 qKey = ord('q')
 pKey = ord('p')
@@ -215,8 +237,12 @@ run_string= maxForce + frequency_multiplier + foot_angle + hip_angle
 
 time_step2 = 0.04
 oscillator_values = [[],[],[],[]]
+oscillator_values2 = [[],[],[],[]]
+
 limb_values = [[],[],[],[], [], [], [], []]
 time_stepId = p.addUserDebugParameter("Oscillator Time Step", 0.01, 1, time_step2)
+time.sleep(1)
+speed_array = []
 while (1):
     keys = p.getKeyboardEvents()
     # if rKey in keys and keys[rKey]&p.KEY_WAS_TRIGGERED:
@@ -228,6 +254,7 @@ while (1):
         p.setRealTimeSimulation(run_simulation)
     if (run_simulation):
         x_list = []
+        x_list2 = []
         time_step2 = p.readUserDebugParameter(time_stepId)
         count += time_step2
         timer += time_step
@@ -252,7 +279,6 @@ while (1):
         # sin_debug = np.sin(timer)
         pos_ori = p.getBasePositionAndOrientation(quadruped)
 
-
         # plt.scatter(pos_ori[0][0]+pos_ori[0][1]+pos_ori[0][2], counter)
         # plt.pause(0.000001)
         # print(p.getBasePositionAndOrientation(quadruped))
@@ -260,7 +286,14 @@ while (1):
         # Angles are in Radians (PI = 360)
         # frf_state = p.getJointState(quadruped, front_right_foot)
         p.addUserDebugLine((pos_ori[0][0], pos_ori[0][1], pos_ori[0][2]), (pos_ori[0][0]+0.1, pos_ori[0][1], pos_ori[0][2]))
-        distance_array.append(pos_ori[0][1])
+        distance = ((np.square(pos_ori[0][1])) + (np.square(pos_ori[0][0])))**(1/2)
+        try:
+            displacement = (distance -distance_array[-1])
+        except Exception as e:
+            displacement = 0
+        distance_array.append(distance)
+        speed = displacement/time_step
+        speed_array.append(speed)
         height_array.append(pos_ori[0][2])
         turn_array.append(pos_ori[0][0])
         x_tilt_array.append(pos_ori[1][0])
@@ -270,43 +303,74 @@ while (1):
         # print(pos_ori[0][0])
         # print(pos_ori[0][1])
         # print(pos_ori[0][2])
-        # print (left_leg)
+        # print (left_leg)0
+        fr_foot_rot = p.getJointState(quadruped, front_right_foot)[0]
+        br_foot_rot = p.getJointState(quadruped, back_right_foot)[0]
+        fl_foot_rot = p.getJointState(quadruped, front_left_foot)[0]
+        bl_foot_rot = p.getJointState(quadruped, back_left_foot)[0]
+
+
+        fr_hip_rot = p.getJointState(quadruped, front_right_hip)[0]
+        fl_hip_rot = p.getJointState(quadruped, front_left_hip)[0]
+        br_hip_rot = p.getJointState(quadruped, back_right_hip)[0]
+        bl_hip_rot = p.getJointState(quadruped, back_left_hip)[0]
+        feedback = [fr_foot_rot, br_foot_rot, fl_foot_rot, bl_foot_rot]
+        feedback2 = [fr_hip_rot, br_hip_rot, fl_hip_rot, bl_hip_rot]
+        lamb_pace = p.readUserDebugParameter(lambId)
+        lamb_bound = p.readUserDebugParameter(lambBoundId)
+        lamb_trot = p.readUserDebugParameter(lambTrotId)
+        lamb = [  [0,lamb_bound,lamb_pace,lamb_trot],
+                  [lamb_bound, 0, lamb_trot, lamb_pace],
+                  [lamb_pace, lamb_trot, 0, lamb_bound],
+                  [lamb_trot, lamb_pace, lamb_bound, 0]]
+
+
         for i in range(4):
             current_i = i
+            chosen_x = start_x
             osc= odeint(van_der_pol_coupled, [start_y[i], start_x[i]], [count-time_step2, count])
+
+
             x = osc[1][1]
             y = osc[1][0]
             x_list.append(x)
             new_y[i] = y
             new_x[i] = x
 
-
+        for i in range(4):
+            current_i2 = i
+            chosen_x2 = start_x2
+            # mu = 1
+            osc2= odeint(van_der_pol_coupled2, [start_y2[i], start_x2[i]], [count-time_step2, count])
+            x2 = osc2[1][1]
+            y2 = osc2[1][0]
+            x_list2.append(x2)
+            new_y2[i] = y2
+            new_x2[i] = x2
 
         start_y = new_y
         start_x = new_x
-        fr_foot_rot = p.getJointState(quadruped, front_right_foot)[0]
-        fl_foot_rot = p.getJointState(quadruped, front_left_foot)[0]
-        br_foot_rot = p.getJointState(quadruped, back_right_foot)[0]
-        bl_foot_rot = p.getJointState(quadruped, back_left_foot)[0]
+        start_y2 = new_y2
+        start_x2 = new_x2
 
-        fr_hip_rot = p.getJointState(quadruped, front_right_hip)[0]
-        fl_hip_rot = p.getJointState(quadruped, front_left_hip)[0]
-        br_hip_rot = p.getJointState(quadruped, back_right_hip)[0]
-        bl_hip_rot = p.getJointState(quadruped, back_left_hip)[0]
 
         time_array.append(timer)
+        oscillator_values2[0].append(x_list2[0])
+        oscillator_values2[1].append(x_list2[1])
+        oscillator_values2[2].append(x_list2[2])
+        oscillator_values2[3].append(x_list2[3])
         oscillator_values[0].append(x_list[0])
         oscillator_values[1].append(x_list[1])
         oscillator_values[2].append(x_list[2])
         oscillator_values[3].append(x_list[3])
         limb_values[0].append(fr_foot_rot)
-        limb_values[1].append(fl_foot_rot)
-        limb_values[2].append(br_foot_rot)
+        limb_values[1].append(br_foot_rot)
+        limb_values[2].append(fl_foot_rot)
         limb_values[3].append(bl_foot_rot)
 
         limb_values[4].append(fr_hip_rot)
-        limb_values[5].append(fl_hip_rot)
-        limb_values[6].append(br_hip_rot)
+        limb_values[5].append(br_hip_rot)
+        limb_values[6].append(fl_hip_rot)
         limb_values[7].append(bl_hip_rot)
         # p.addUserDebugLine((frf_state[0], frf_state[1], pos_ori[0][2]), (frf_state[0], frf_state[1], pos_ori[0][2]))
         if (debug):
@@ -322,10 +386,10 @@ while (1):
             p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(foot_angle*x_list[1]*0.1), force=maxForce)
             p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL,  -jointOffsets[11]+(foot_angle*x_list[3]*0.1), force=maxForce)
             #
-            p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOffsets[1]+(hip_angle*x_list[0]*0.1), force=maxForce)
-            p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL,  -jointOffsets[4]+(hip_angle*x_list[2]*0.1), force=maxForce)
-            p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL,  -jointOffsets[7]+(hip_angle*x_list[1]*0.1), force=maxForce)
-            p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,   -jointOffsets[10]+(hip_angle*x_list[3]*0.1), force=maxForce)
+            p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOffsets[1]+(hip_angle*x_list2[0]*0.1), force=maxForce)
+            p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL,  -jointOffsets[4]+(hip_angle*x_list2[2]*0.1), force=maxForce)
+            p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL,  -jointOffsets[7]+(hip_angle*x_list2[1]*0.1), force=maxForce)
+            p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,   -jointOffsets[10]+(hip_angle*x_list2[3]*0.1), force=maxForce)
             p.setJointMotorControl2(quadruped, front_left_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
             p.setJointMotorControl2(quadruped, front_right_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
             p.setJointMotorControl2(quadruped, back_left_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
@@ -346,39 +410,48 @@ for items in run_array:
     string += " ]\n"
     run_log.write(string)
 run_log.close()
-plot = "oscillators"
+plot = "physics"
 if plot == "oscillators":
     plt.figure(figsize=(15,15))
-    plt.subplot(3,1,1)
+    plt.subplot(4,1,1)
     plt.title("X Value 1")
     plt.xlabel("Time Step (t)")
     plt.ylabel("X Value")
-    plt.plot(time_array, oscillator_values[0], c='red')
-    plt.plot(time_array, oscillator_values[1], c='blue')
-    plt.plot(time_array, oscillator_values[2], c='green')
-    plt.plot(time_array, oscillator_values[3], c='yellow')
-    plt.subplot(3,1,2)
-    plt.plot(time_array, limb_values[0], c='red')
-    plt.plot(time_array, limb_values[1], c='blue')
-    plt.plot(time_array, limb_values[2], c='green')
-    plt.plot(time_array, limb_values[3], c='yellow')
-    plt.subplot(3,1,3)
-    plt.plot(time_array, limb_values[4], c='red')
-    plt.plot(time_array, limb_values[5], c='blue')
-    plt.plot(time_array, limb_values[6], c='green')
-    plt.plot(time_array, limb_values[7], c='yellow')
+    plt.plot(time_array, oscillator_values[0])
+    plt.plot(time_array, oscillator_values[1])
+    plt.plot(time_array, oscillator_values[2])
+    plt.plot(time_array, oscillator_values[3])
+    plt.subplot(4,1,2)
+    plt.title("X Value 1")
+    plt.xlabel("Time Step (t)")
+    plt.ylabel("X Value")
+    plt.plot(time_array, oscillator_values2[0])
+    plt.plot(time_array, oscillator_values2[1])
+    plt.plot(time_array, oscillator_values2[2])
+    plt.plot(time_array, oscillator_values2[3])
+    plt.title("X Value 1")
+    plt.subplot(4,1,3)
+    plt.plot(time_array, limb_values[0])
+    plt.plot(time_array, limb_values[1])
+    plt.plot(time_array, limb_values[2])
+    plt.plot(time_array, limb_values[3])
+    plt.subplot(4,1,4)
+    plt.plot(time_array, limb_values[4])
+    plt.plot(time_array, limb_values[5])
+    plt.plot(time_array, limb_values[6])
+    plt.plot(time_array, limb_values[7])
     plt.show()
 if plot == "physics":
     plt.figure(figsize=(15,15))
     plt.subplot(3, 3, 1)
     plt.title("Z Distance Travelled Over Time")
-    plt.xlabel("Time Step (t/"+time_step+")")
+    plt.xlabel("Time Step (t/"+str(time_step)+")")
     plt.ylabel("Distance")
     plt.plot(time_array, distance_array)
     plt.subplot(3, 3, 2)
-    plt.title("Height Variation Over Time")
-    plt.plot(time_array, height_array)
-    plt.ylabel("Height from Center Point")
+    plt.title("Speed Variation Over Time")
+    plt.plot(time_array, speed_array)
+    plt.ylabel("velocity (displacement/time)")
     plt.xlabel("Time Step (t)")
     plt.subplot(3, 3, 3)
     plt.title("Turn in X Over Time")
