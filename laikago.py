@@ -23,9 +23,9 @@ run_array = []
 gravity = -9.8
 time_step = 1./500
 frequency_multiplier = 175
-foot_angle = 15
-hip_angle = 6
-max_force = 30
+foot_angle = 5
+hip_angle = 5
+max_force = 25
 w = 20
 mu = 1
 p_v = 2
@@ -71,6 +71,9 @@ else:
 base_dynamics_info = p.getDynamicsInfo(quadruped, -1)
 frh_dynamics_info = p.getDynamicsInfo(quadruped, front_right_hip)
 flh_dynamics_info = p.getDynamicsInfo(quadruped, front_left_hip)
+print (base_dynamics_info)
+print(frh_dynamics_info)
+print(flh_dynamics_info )
 
 run_array.append(['base mass', [[base_dynamics_info[0], 0]]])
 
@@ -109,9 +112,8 @@ for i in range (4):
 maxForceId = p.addUserDebugParameter("maxForce",0,100,max_force)
 
 for j in range (p.getNumJoints(quadruped)):
-        p.changeDynamics(quadruped,j,linearDamping=0.1, angularDamping=0.1)
+        p.changeDynamics(quadruped,j,linearDamping=0.5, angularDamping=0.5)
         info = p.getJointInfo(quadruped,j)
-        #print(info)
         jointName = info[1]
         jointType = info[2]
         if (jointType==p.JOINT_PRISMATIC or jointType==p.JOINT_REVOLUTE):
@@ -164,6 +166,14 @@ p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, -jointOf
 p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5], force=maxForce)
 p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8], force=maxForce)
 p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL, -jointOffsets[11], force=maxForce)
+p.enableJointForceTorqueSensor(quadruped, front_right_hip)
+p.enableJointForceTorqueSensor(quadruped, front_left_hip)
+p.enableJointForceTorqueSensor(quadruped, back_right_hip)
+p.enableJointForceTorqueSensor(quadruped, back_left_hip)
+p.enableJointForceTorqueSensor(quadruped, front_right_foot)
+p.enableJointForceTorqueSensor(quadruped, front_left_foot)
+p.enableJointForceTorqueSensor(quadruped, back_right_foot)
+p.enableJointForceTorqueSensor(quadruped, back_left_foot)
 foot_angleId = p.addUserDebugParameter("Foot Angle of rotation", 0, 20, foot_angle)
 hip_angleId = p.addUserDebugParameter("Hip Angle of rotation", 0, 20, hip_angle)
 p.useFixedBase = True
@@ -186,13 +196,19 @@ z_tilt_array = []
 lamb_trot = -0.2
 lamb_pace = -0.2
 lamb_bound = -0.2
+lamb_walk = 0.2
+#
+# lamb = [  [0,lamb_bound,lamb_pace,lamb_trot],
+#           [lamb_bound, 0, lamb_walk, lamb_pace],
+#           [lamb_pace, lamb_walk, 0, lamb_bound],
+#           [lamb_trot, lamb_pace, lamb_bound, 0]]
 
-lamb = [  [0,lamb_bound,lamb_pace,lamb_trot],
-          [lamb_bound, 0, lamb_trot, lamb_pace],
-          [lamb_pace, lamb_trot, 0, lamb_bound],
-          [lamb_trot, lamb_pace, lamb_bound, 0]]
-
+lamb = [ [0, lamb_bound, lamb_pace, lamb_trot],
+       [lamb_bound, 0, lamb_trot, lamb_pace],
+       [lamb_pace, lamb_trot, 0, lamb_pace],
+       [lamb_trot, lamb_pace, lamb_bound, 0]]
 lambId = p.addUserDebugParameter("Lamb pace",lamb_pace, -lamb_pace, lamb_pace)
+lambWalkId = p.addUserDebugParameter("Lamb walk", -lamb_walk, lamb_walk, lamb_walk)
 lambBoundId = p.addUserDebugParameter("Lamb Bound",lamb_bound, -lamb_bound, lamb_bound)
 lambTrotId = p.addUserDebugParameter("Lamb Trot", lamb_trot, -lamb_trot, lamb_trot)
 
@@ -235,17 +251,20 @@ pKey = ord('p')
 rKey = ord('r')
 run_string= maxForce + frequency_multiplier + foot_angle + hip_angle
 
-time_step2 = 0.04
+time_step2 = 0.03
 oscillator_values = [[],[],[],[]]
 oscillator_values2 = [[],[],[],[]]
-
+force_values= [[],[],[],[], [], [], [], []]
 limb_values = [[],[],[],[], [], [], [], []]
 time_stepId = p.addUserDebugParameter("Oscillator Time Step", 0.01, 1, time_step2)
 time.sleep(1)
 speed_array = []
+total_displacement = 0
+total_distance = 0
+total_force = 0
 while (1):
     keys = p.getKeyboardEvents()
-    # if rKey in keys and keys[rKey]&p.KEY_WAS_TRIGGERED:
+    # if rKey in keys and keys[rKey]&p.KEY_WAS_TRIGGERED:cebook.com/
     #     p.resetBasePositionAndOrientation(quadruped, 0, 0, 0)
     if qKey in keys and keys[qKey]&p.KEY_WAS_TRIGGERED:
         break;
@@ -277,7 +296,7 @@ while (1):
         # sin = np.sin(np.pi*1/4+(timer)*frequency_multiplier)
         # sin2 = np.sin(np.pi*3/4+(timer)*frequency_multiplier)
         # sin_debug = np.sin(timer)
-        pos_ori = p.getBasePositionAndOrientation(quadruped)
+        pos_ori = p.getBasePositionAndOrientation(quadruped)*2
 
         # plt.scatter(pos_ori[0][0]+pos_ori[0][1]+pos_ori[0][2], counter)
         # plt.pause(0.000001)
@@ -286,13 +305,14 @@ while (1):
         # Angles are in Radians (PI = 360)
         # frf_state = p.getJointState(quadruped, front_right_foot)
         p.addUserDebugLine((pos_ori[0][0], pos_ori[0][1], pos_ori[0][2]), (pos_ori[0][0]+0.1, pos_ori[0][1], pos_ori[0][2]))
-        distance = ((np.square(pos_ori[0][1])) + (np.square(pos_ori[0][0])))**(1/2)
+        distance = (((pos_ori[0][1])**2) + ((pos_ori[0][0])**2))**(1/2)
         try:
-            displacement = (distance -distance_array[-1])
+            displacement = (distance-distance_array[-1])
         except Exception as e:
             displacement = 0
         distance_array.append(distance)
         speed = displacement/time_step
+        total_distance = distance
         speed_array.append(speed)
         height_array.append(pos_ori[0][2])
         turn_array.append(pos_ori[0][0])
@@ -300,10 +320,29 @@ while (1):
         y_tilt_array.append(pos_ori[1][1])
         z_tilt_array.append(pos_ori[1][2])
 
+        total_displacement = distance
+
         # print(pos_ori[0][0])
         # print(pos_ori[0][1])
         # print(pos_ori[0][2])
-        # print (left_leg)0
+        # print (left_leg)
+        force_expended = 0
+        for n in range(8):
+            force_expended += (abs(p.getJointState(quadruped, front_right_foot)[2][0]/100)*max_force)**2
+            # print(n)
+        force_expended = force_expended**(1/2)
+
+        total_force += force_expended
+
+        fr_foot_forces = abs(p.getJointState(quadruped, front_right_foot)[2][0]/100*maxForce)
+        br_foot_forces = abs(p.getJointState(quadruped, back_right_foot)[2][0]/100*maxForce)
+        fl_foot_forces = abs(p.getJointState(quadruped, front_left_foot)[2][0]/100*maxForce)
+        bl_foot_forces = abs(p.getJointState(quadruped, back_left_foot)[2][0]/100*maxForce)
+        fr_hip_forces = abs(p.getJointState(quadruped, front_right_hip)[2][0]/100*maxForce)
+        br_hip_forces = abs(p.getJointState(quadruped, back_right_hip)[2][0]/100*maxForce)
+        fl_hip_forces = abs(p.getJointState(quadruped, front_left_hip)[2][0]/100*maxForce)
+        bl_hip_forces = abs(p.getJointState(quadruped, back_left_hip)[2][0]/100*maxForce)
+
         fr_foot_rot = p.getJointState(quadruped, front_right_foot)[0]
         br_foot_rot = p.getJointState(quadruped, back_right_foot)[0]
         fl_foot_rot = p.getJointState(quadruped, front_left_foot)[0]
@@ -319,11 +358,13 @@ while (1):
         lamb_pace = p.readUserDebugParameter(lambId)
         lamb_bound = p.readUserDebugParameter(lambBoundId)
         lamb_trot = p.readUserDebugParameter(lambTrotId)
-        lamb = [  [0,lamb_bound,lamb_pace,lamb_trot],
-                  [lamb_bound, 0, lamb_trot, lamb_pace],
-                  [lamb_pace, lamb_trot, 0, lamb_bound],
-                  [lamb_trot, lamb_pace, lamb_bound, 0]]
+        lamb_walk = p.readUserDebugParameter(lambWalkId)
+        lamb = [ [0, lamb_bound, lamb_pace, lamb_trot],
+               [lamb_bound, 0, lamb_trot, lamb_pace],
+               [lamb_pace, lamb_trot, 0, lamb_pace],
+               [lamb_trot, lamb_pace, lamb_bound, 0]]
 
+        force_values[0].append(force_expended)
 
         for i in range(4):
             current_i = i
@@ -372,6 +413,7 @@ while (1):
         limb_values[5].append(br_hip_rot)
         limb_values[6].append(fl_hip_rot)
         limb_values[7].append(bl_hip_rot)
+
         # p.addUserDebugLine((frf_state[0], frf_state[1], pos_ori[0][2]), (frf_state[0], frf_state[1], pos_ori[0][2]))
         if (debug):
             # p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, foot_debug*sin_debug, force=maxForce)
@@ -402,6 +444,13 @@ while (1):
 
 run_name = 'laikago-sin-'+datetime.datetime.today().strftime('%Y-%s')+"-"
 run_log = open(run_name+"log.txt", "w+")
+
+print (total_distance)
+print (timer)
+print (total_distance/timer)
+print (total_force)
+power = total_force * (total_distance/timer)
+print (power)
 for items in run_array:
     string = ""
     string = str(items[0])+": [ "
@@ -410,7 +459,7 @@ for items in run_array:
     string += " ]\n"
     run_log.write(string)
 run_log.close()
-plot = "physics"
+plot = "oscillators"
 if plot == "oscillators":
     plt.figure(figsize=(15,15))
     plt.subplot(4,1,1)
@@ -422,6 +471,7 @@ if plot == "oscillators":
     plt.plot(time_array, oscillator_values[2])
     plt.plot(time_array, oscillator_values[3])
     plt.subplot(4,1,2)
+
     plt.title("X Value 1")
     plt.xlabel("Time Step (t)")
     plt.ylabel("X Value")
@@ -431,10 +481,10 @@ if plot == "oscillators":
     plt.plot(time_array, oscillator_values2[3])
     plt.title("X Value 1")
     plt.subplot(4,1,3)
-    plt.plot(time_array, limb_values[0])
-    plt.plot(time_array, limb_values[1])
-    plt.plot(time_array, limb_values[2])
-    plt.plot(time_array, limb_values[3])
+    plt.plot(time_array, limb_values[0], c="r")
+    plt.plot(time_array, limb_values[1],  c="b")
+    plt.plot(time_array, limb_values[2],  c="g")
+    plt.plot(time_array, limb_values[3],  c="y")
     plt.subplot(4,1,4)
     plt.plot(time_array, limb_values[4])
     plt.plot(time_array, limb_values[5])
@@ -469,8 +519,15 @@ if plot == "physics":
     plt.ylabel("Y Value")
     plt.xlabel("Time Step (t)")
     plt.subplot(3, 3, 6)
-    plt.title("Z Rotation Over Time")
-    plt.plot(time_array, z_tilt_array)
+    plt.title("Forces")
+    plt.plot(time_array, force_values[0])
+    # plt.plot(time_array, force_values[1])
+    # plt.plot(time_array, force_values[2])
+    # plt.plot(time_array, force_values[3])
+    # plt.plot(time_array, force_values[4])
+    # plt.plot(time_array, force_values[5])
+    # plt.plot(time_array, force_values[6])
+    # plt.plot(time_array, force_values[7])
     plt.ylabel("Z Value")
     plt.xlabel("Time Step (t)")
     plt.savefig(run_name, dpi=250)

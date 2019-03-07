@@ -1,0 +1,7 @@
+gravity: [ [V: -9.8 T: 0] ]
+time_step: [ [V: 0.002 T: 0] ]
+frequency_multiplier: [ [V: 175 T: 0] ]
+foot_angle: [ [V: 15 T: 0] ]
+hip_angle: [ [V: 6 T: 0] ]
+max_force: [ [V: 15 T: 0][V: 26.3157901763916 T: 0.5780000000000004] ]
+base mass: [ [V: 13.715 T: 0] ]
