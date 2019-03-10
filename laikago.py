@@ -63,6 +63,9 @@ p.setDefaultContactERP(0)
 urdfFlags = p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
 # urdfFlags = p.URDF_USE_SELF_COLLISION
 debug = False;
+cube = p.loadURDF("cube.urdf", [0.6,0,0.5],[0,1,0, 0], flags = urdfFlags, useFixedBase=True)
+cube2 = p.loadURDF("cube.urdf", [-0.6,0,0.5],[0,1,0, 0], flags = urdfFlags, useFixedBase=True)
+
 if (debug):
     quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=True)
 else:
@@ -71,9 +74,7 @@ else:
 base_dynamics_info = p.getDynamicsInfo(quadruped, -1)
 frh_dynamics_info = p.getDynamicsInfo(quadruped, front_right_hip)
 flh_dynamics_info = p.getDynamicsInfo(quadruped, front_left_hip)
-print (base_dynamics_info)
-print(frh_dynamics_info)
-print(flh_dynamics_info )
+
 
 run_array.append(['base mass', [[base_dynamics_info[0], 0]]])
 
@@ -123,12 +124,13 @@ for j in range (p.getNumJoints(quadruped)):
 p.getCameraImage(480,320)
 p.setRealTimeSimulation(run_simulation)
 
+
 joints=[]
 #
 
 
 for j in range (p.getNumJoints(quadruped)):
-        p.changeDynamics(quadruped,j,linearDamping=0, angularDamping=0)
+        p.changeDynamics(quadruped,j,linearDamping=0.5, angularDamping=0.5)
         info = p.getJointInfo(quadruped,j)
         js = p.getJointState(quadruped,j)
         # print(info)
@@ -147,8 +149,8 @@ muId = p.addUserDebugParameter("mu (Legs)", 0, 100, mu)
 pvId = p.addUserDebugParameter("p_v (Legs)", 0, 100, p_v)
 
 phaseTimeId = p.addUserDebugParameter("Frequency Multiplier",frequency_multiplier-(frequency_multiplier/2) ,frequency_multiplier+(frequency_multiplier/2),frequency_multiplier)
-jointOffsets[1] -= -0.5
-jointOffsets[4] -= -0.5
+jointOffsets[1] -= -0.7
+jointOffsets[4] -= -0.7
 jointOffsets[7] -= -0.5
 jointOffsets[10] -= -0.5
 # sin =  np.sin(0)
@@ -254,7 +256,7 @@ run_string= maxForce + frequency_multiplier + foot_angle + hip_angle
 time_step2 = 0.03
 oscillator_values = [[],[],[],[]]
 oscillator_values2 = [[],[],[],[]]
-force_values= [[],[],[],[], [], [], [], []]
+force_values= [[],[]]
 limb_values = [[],[],[],[], [], [], [], []]
 time_stepId = p.addUserDebugParameter("Oscillator Time Step", 0.01, 1, time_step2)
 time.sleep(1)
@@ -262,6 +264,11 @@ speed_array = []
 total_displacement = 0
 total_distance = 0
 total_force = 0
+force_expended = 0
+cost_of_transport= [[],[]]
+sample_timer = 0
+# TODO, CHANGE SAMPLING RATE TO TIME FOR A FULL OSCILLATION
+sampling_rate = 30*time_step
 while (1):
     keys = p.getKeyboardEvents()
     # if rKey in keys and keys[rKey]&p.KEY_WAS_TRIGGERED:cebook.com/
@@ -319,20 +326,35 @@ while (1):
         x_tilt_array.append(pos_ori[1][0])
         y_tilt_array.append(pos_ori[1][1])
         z_tilt_array.append(pos_ori[1][2])
+        if (sample_timer >= sampling_rate):
+            force_values[0].append(timer)
+            measurements_taken = (sample_timer/time_step)
+            force_values[1].append(total_force/measurements_taken)
+            total_force = 0
+            sample_timer = 0
+            # cost_of_transport[0].append(time r)
+            # cost_of_transport[1].append()
+            # force_values[0].append(total_froce)
+            # force_expended = 0
+        # else:
+        sample_timer += time_step
+        force_expended =0
+        for n in range(12):
+            force_expended += (abs(p.getJointState(quadruped, n)[2][0]/100)*max_force)**2
+        force_expended = force_expended**(1/2)#
+        print(force_expended)
+        total_force += force_expended
 
         total_displacement = distance
+        # force_values[0].append(force_expended)
 
         # print(pos_ori[0][0])
         # print(pos_ori[0][1])
         # print(pos_ori[0][2])
         # print (left_leg)
-        force_expended = 0
-        for n in range(8):
-            force_expended += (abs(p.getJointState(quadruped, front_right_foot)[2][0]/100)*max_force)**2
-            # print(n)
-        force_expended = force_expended**(1/2)
 
-        total_force += force_expended
+            # print(n)
+
 
         fr_foot_forces = abs(p.getJointState(quadruped, front_right_foot)[2][0]/100*maxForce)
         br_foot_forces = abs(p.getJointState(quadruped, back_right_foot)[2][0]/100*maxForce)
@@ -364,7 +386,6 @@ while (1):
                [lamb_pace, lamb_trot, 0, lamb_pace],
                [lamb_trot, lamb_pace, lamb_bound, 0]]
 
-        force_values[0].append(force_expended)
 
         for i in range(4):
             current_i = i
@@ -459,7 +480,7 @@ for items in run_array:
     string += " ]\n"
     run_log.write(string)
 run_log.close()
-plot = "oscillators"
+plot = "physics"
 if plot == "oscillators":
     plt.figure(figsize=(15,15))
     plt.subplot(4,1,1)
@@ -491,6 +512,13 @@ if plot == "oscillators":
     plt.plot(time_array, limb_values[6])
     plt.plot(time_array, limb_values[7])
     plt.show()
+if plot == "physics2":
+    plt.figure(figsize=(15,15))
+    plt.subplot(1,1,1)
+    plt.title("Cost Of Transport")
+    plt.xlabel("Time Step (t) (Measurement taken every second)")
+    plt.ylabel("Cost Of Transport ")
+
 if plot == "physics":
     plt.figure(figsize=(15,15))
     plt.subplot(3, 3, 1)
@@ -519,8 +547,10 @@ if plot == "physics":
     plt.ylabel("Y Value")
     plt.xlabel("Time Step (t)")
     plt.subplot(3, 3, 6)
+    print(force_values)
     plt.title("Forces")
-    plt.plot(time_array, force_values[0])
+    plt.ylim([0,max_force])
+    plt.plot(force_values[0], force_values[1])
     # plt.plot(time_array, force_values[1])
     # plt.plot(time_array, force_values[2])
     # plt.plot(time_array, force_values[3])
