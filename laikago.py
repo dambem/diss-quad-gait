@@ -69,7 +69,7 @@ cube2 = p.loadURDF("cube.urdf", [-0.6,0,0.5],[0,1,0, 0], flags = urdfFlags, useF
 if (debug):
     quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=True)
 else:
-    quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
+    quadruped = p.loadURDF("laikago/laikago.urdf",[0,-20,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
 
 base_dynamics_info = p.getDynamicsInfo(quadruped, -1)
 frh_dynamics_info = p.getDynamicsInfo(quadruped, front_right_hip)
@@ -268,7 +268,7 @@ force_expended = 0
 cost_of_transport= [[],[]]
 sample_timer = 0
 # TODO, CHANGE SAMPLING RATE TO TIME FOR A FULL OSCILLATION
-sampling_rate = 30*time_step
+sampling_rate = 100*time_step
 while (1):
     keys = p.getKeyboardEvents()
     # if rKey in keys and keys[rKey]&p.KEY_WAS_TRIGGERED:cebook.com/
@@ -312,21 +312,21 @@ while (1):
         # Angles are in Radians (PI = 360)
         # frf_state = p.getJointState(quadruped, front_right_foot)
         p.addUserDebugLine((pos_ori[0][0], pos_ori[0][1], pos_ori[0][2]), (pos_ori[0][0]+0.1, pos_ori[0][1], pos_ori[0][2]))
-        distance = (((pos_ori[0][1])**2) + ((pos_ori[0][0])**2))**(1/2)
-        try:
-            displacement = (distance-distance_array[-1])
-        except Exception as e:
-            displacement = 0
-        distance_array.append(distance)
-        speed = displacement/time_step
-        total_distance = distance
-        speed_array.append(speed)
+        # try:
+        #     displacement = (distance-distance_array[-1])
+        # except Exception as e:
+        #     displacement = 0
+        # speed = displacement/time_step
+        # total_distance = distance
+        # speed_array.append(speed)
         height_array.append(pos_ori[0][2])
         turn_array.append(pos_ori[0][0])
         x_tilt_array.append(pos_ori[1][0])
         y_tilt_array.append(pos_ori[1][1])
         z_tilt_array.append(pos_ori[1][2])
         if (sample_timer >= sampling_rate):
+            distance = (((pos_ori[0][1])**2) + ((pos_ori[0][0])**2))**(1/2)
+            # distance_array.append(distance)
             force_values[0].append(timer)
             measurements_taken = (sample_timer/time_step)
             force_values[1].append(total_force/measurements_taken)
@@ -345,7 +345,7 @@ while (1):
         print(force_expended)
         total_force += force_expended
 
-        total_displacement = distance
+        # total_displacement = distance
         # force_values[0].append(force_expended)
 
         # print(pos_ori[0][0])
@@ -480,7 +480,7 @@ for items in run_array:
     string += " ]\n"
     run_log.write(string)
 run_log.close()
-plot = "physics"
+plot = "physics2"
 if plot == "oscillators":
     plt.figure(figsize=(15,15))
     plt.subplot(4,1,1)
@@ -514,26 +514,36 @@ if plot == "oscillators":
     plt.show()
 if plot == "physics2":
     plt.figure(figsize=(15,15))
-    plt.subplot(1,1,1)
-    plt.title("Cost Of Transport")
-    plt.xlabel("Time Step (t) (Measurement taken every second)")
-    plt.ylabel("Cost Of Transport ")
-
+    # plt.subplot(1,1,1)
+    # plt.title("Cost Of Transport")
+    # plt.xlabel("Time Step (t) (Measurement taken every second)")
+    # plt.ylabel("Cost Of Transport ")
+    # plt.subplot(1,1,1)
+    # plt.title("Speed Variation Over Time")
+    # plt.plot(time_array, speed_array)
+    # plt.ylabel("velocity (displacement/time)")
+    # plt.xlabel("Time Step (t)")
+    plt.subplot(1,2,2)
+    plt.title("Forces")
+    plt.ylim([0,max_force])
+    plt.plot(force_values[0], force_values[1])
+    plt.show()
 if plot == "physics":
     plt.figure(figsize=(15,15))
     plt.subplot(3, 3, 1)
-    plt.title("Z Distance Travelled Over Time")
-    plt.xlabel("Time Step (t/"+str(time_step)+")")
-    plt.ylabel("Distance")
-    plt.plot(time_array, distance_array)
-    plt.subplot(3, 3, 2)
-    plt.title("Speed Variation Over Time")
-    plt.plot(time_array, speed_array)
-    plt.ylabel("velocity (displacement/time)")
-    plt.xlabel("Time Step (t)")
+    # plt.title("Z Distance Travelled Over Time")
+    # plt.xlabel("Time Step (t/"+str(time_step)+")")
+    # plt.ylabel("Distance")
+    # plt.plot(time_array, distance_array)
+    # plt.subplot(3, 3, 2)
+
     plt.subplot(3, 3, 3)
     plt.title("Turn in X Over Time")
     plt.plot(time_array, turn_array)
+    # plt.title("Speed Variation Over Time")
+    # plt.plot(time_array, speed_array)
+    # plt.ylabel("velocity (displacement/time)")
+    # plt.xlabel("Tim
     plt.ylabel("X Value")
     plt.xlabel("Time Step (t)")
     plt.subplot(3, 3, 4)
@@ -548,9 +558,7 @@ if plot == "physics":
     plt.xlabel("Time Step (t)")
     plt.subplot(3, 3, 6)
     print(force_values)
-    plt.title("Forces")
-    plt.ylim([0,max_force])
-    plt.plot(force_values[0], force_values[1])
+
     # plt.plot(time_array, force_values[1])
     # plt.plot(time_array, force_values[2])
     # plt.plot(time_array, force_values[3])
