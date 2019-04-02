@@ -1,0 +1,5 @@
+gravity: [ [V: -9.8 T: 0] ]
+time_step: [ [V: 0.002 T: 0] ]
+foot_angle: [ [V: 5 T: 0] ]
+hip_angle: [ [V: 5 T: 0] ]
+max_force: [ [V: 5 T: 0] ]
