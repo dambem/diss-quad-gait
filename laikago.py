@@ -8,15 +8,15 @@ from scipy.integrate import odeint
 
 
 # Oscillator Values, Initiated at 1
-start_y = [1,1,1,1]
-start_x = [0,0,0,0]
-new_y = [1,1,1,1]
-new_x = [0,0,0,0]
+start_y_foot = [1,1,1,1]
+start_x_foot = [0,0,0,0]
+new_y_foot = [1,1,1,1]
+new_x_foot = [0,0,0,0]
 
-start_y2 = [1,1,1,1]
-start_x2 = [0,0,0,0]
-new_y2 = [1,1,1,1]
-new_x2 = [0,0,0,0]
+start_y_hip = [1,1,1,1]
+start_x_hip = [0,0,0,0]
+new_y_hip = [1,1,1,1]
+new_x_hip = [0,0,0,0]
 
 count = 0
 # Initial Configuration (Can Later Be Changed Through User Parameters)
@@ -24,10 +24,10 @@ run_array = []
 gravity = -9.8
 time_step = 1./500
 # frequency_multiplier = 175
-foot_angle = 10
-hip_angle = 15
+foot_angle = 6
+hip_angle = 7
 max_force = 30
-time_step2 = 0.01
+oscillator_step = 0.025
 
 w = 20
 van_multi = 0.1
@@ -36,7 +36,7 @@ van_multi2 = 0.1
 mu = 1
 p_v = 2
 
-# Hip Configurations (SET, DO NOT CHANGE)start_x
+# Hip Configurations (SET, DO NOT CHANGE)start_x_foot
 front_right_hip = 1
 front_left_hip = 4
 back_right_hip = 7
@@ -62,8 +62,8 @@ p.setDefaultContactERP(0)
 urdfFlags = p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
 
 debug = False;
-cube = p.loadURDF("cube.urdf", [0.5,0,0.35],[0,1,0, 0], flags = urdfFlags, useFixedBase=True)
-cube2 = p.loadURDF("cube.urdf", [-0.5,0,0.35],[0,1,0, 0], flags = urdfFlags, useFixedBase=True)
+# cube = p.loadURDF("cube.urdf", [0.5,0,0.35],[0,1,0, 0], flags = urdfFlags, useFixedBase=True)
+# cube2 = p.loadURDF("cube.urdf", [-0.5,0,0.35],[0,1,0, 0], flags = urdfFlags, useFixedBase=True)
 
 quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
 
@@ -187,26 +187,26 @@ def van_der_pol_oscillator_deriv(x, t):
     res = np.array([x0, x1])
     return res
 
-def van_der_pol_coupled(x, t):
-    # global chosen_x
+def van_der_pol_coupled_foot(x, t):
+    # global chosen_x_foot
     x0 = x[1]
     x_ai =x[0]
     for j in range(4):
-        x_ai += x[0]-(lamb[current_i][j]*chosen_x[j])
+        x_ai += x[0]-(lamb[current_i][j]*chosen_x_foot[j])
     # x_ai *= time_step
-    # osc = odeint(van_der_pol_oscillator_deriv, [x[0], x[1]], [t-time_step, t])
+    # osc_foot = odeint(van_der_pol_oscillator_deriv, [x[0], x[1]], [t-time_step, t])
     x1 =  mu * ((p_v - (x_ai** 2.0))* x0) - x_ai*w
     # + (0.5*feedback[current_i])
     res = np.array([x0, x1])
     return res
 
-def van_der_pol_coupled2(x, t):
-    # global chosen_x2
+def van_der_pol_coupled_hip(x, t):
+    # global chosen_x_hip
     x0 = x[1]
     x_ai =x[0]
     # print(current_i2)
     for j in range(4):
-        x_ai += x[0]-(lamb[current_i2][j]*chosen_x2[j])
+        x_ai += x[0]-(lamb[current_i2][j]*chosen_x_hip[j])
     # x_ai *= time_step
     x1 =  mu * ((p_v - (x_ai** 2.0))* x0) - x_ai*w
     # + (0.5*feedback2[current_i2])
@@ -223,7 +223,7 @@ oscillator_values = [[],[],[],[]]
 oscillator_values2 = [[],[],[],[]]
 force_values= []
 limb_values = [[],[],[],[], [], [], [], []]
-time_stepId = p.addUserDebugParameter("Oscillator Time Step", 0.001, 0.05, time_step2)
+time_stepId = p.addUserDebugParameter("Oscillator Time Step", 0.001, 0.05, oscillator_step)
 time.sleep(1)
 velocity_array = []
 sampling_array =[]
@@ -246,24 +246,17 @@ while (timer <= 10):
         run_simulation = not run_simulation
         p.setRealTimeSimulation(run_simulation)
     if (run_simulation):
-        x_list = []
-        x_list2 = []
-        time_step2 = p.readUserDebugParameter(time_stepId)
-        count += time_step2
+        x_list_foot = []
+        x_list_hip = []
+        oscillator_step = p.readUserDebugParameter(time_stepId)
+        count += oscillator_step
         timer += time_step
-        # if (maxForce != p.readUserDebugParameter(maxForceId)):
-        #     run_array[5][1].append([p.readUserDebugParameter(maxForceId), timer])
         maxForce = p.readUserDebugParameter(maxForceId)
-        # frequency_multiplier = p.readUserDebugParameter(phaseTimeId)
         foot_angle = deg_to_rad(p.readUserDebugParameter(foot_angleId))
         hip_angle = deg_to_rad(p.readUserDebugParameter(hip_angleId))
         w = p.readUserDebugParameter(wId)
         mu = p.readUserDebugParameter(muId)
         p_v = int(p.readUserDebugParameter(pvId))
-        # sin = np.sin((timer)*frequency_multiplier)
-        # sin2 = np.sin(np.pi*0.5+(timer)*frequency_multiplier)
-        # sin3 = np.sin(np.pi*1/4+(timer)*frequency_multiplier)
-        # sin4 = np.sin(np.pi*3/4+(timer)*frequency_multiplier)
 
         pos_ori = p.getBasePositionAndOrientation(quadruped)*2
 
@@ -323,18 +316,8 @@ while (timer <= 10):
         fl_hip_forces = abs(p.getJointState(quadruped, front_left_hip)[2][0]/100*maxForce)
         bl_hip_forces = abs(p.getJointState(quadruped, back_left_hip)[2][0]/100*maxForce)
 
-        fr_foot_rot = p.getJointState(quadruped, front_right_foot)[0]
-        br_foot_rot = p.getJointState(quadruped, back_right_foot)[0]
-        fl_foot_rot = p.getJointState(quadruped, front_left_foot)[0]
-        bl_foot_rot = p.getJointState(quadruped, back_left_foot)[0]
-
-
-        fr_hip_rot = p.getJointState(quadruped, front_right_hip)[0]
-        fl_hip_rot = p.getJointState(quadruped, front_left_hip)[0]
-        br_hip_rot = p.getJointState(quadruped, back_right_hip)[0]
-        bl_hip_rot = p.getJointState(quadruped, back_left_hip)[0]
-        feedback = [fr_foot_rot, br_foot_rot, fl_foot_rot, bl_foot_rot]
-        feedback2 = [fr_hip_rot, br_hip_rot, fl_hip_rot, bl_hip_rot]
+        # feedback = [fr_foot_rot, br_foot_rot, fl_foot_rot, bl_foot_rot]
+        # feedback2 = [fr_hip_rot, br_hip_rot, fl_hip_rot, bl_hip_rot]
 
         lamb_walk2 = [ [0, -0.1, -0.1, -0.1],
                       [-0.1, 0, -0.1, -0.1],
@@ -356,73 +339,59 @@ while (timer <= 10):
                       [-0.1, 0, -0.1, 0.1],
                       [0.1, -0.1, 0, -0.1],
                       [-0.1, 0.1, -0.1, 0]]
-        lamb = lamb_walk
+        lamb = lamb_walk2
 
 
         for i in range(4):
             current_i = i
-            chosen_x = start_x
-            osc= odeint(van_der_pol_coupled, [start_y[i], start_x[i]], [count-time_step2, count])
-
-
-            x = osc[1][1]
-            y = osc[1][0]
-            x_list.append(x)
-            new_y[i] = y
-            new_x[i] = x
+            chosen_x_foot = start_x_foot
+            osc_foot= odeint(van_der_pol_coupled_foot, [start_y_foot[i], start_x_foot[i]], [count-oscillator_step, count])
+            x = osc_foot[1][1]
+            y = osc_foot[1][0]
+            x_list_foot.append(x)
+            new_y_foot[i] = y
+            new_x_foot[i] = x
 
         for i in range(4):
             current_i2 = i
-            chosen_x2 = start_x2
-            # mu = 1
-            osc2= odeint(van_der_pol_coupled2, [start_y2[i], start_x2[i]], [count-time_step2, count])
-            x2 = osc2[1][1]
-            y2 = osc2[1][0]
-            x_list2.append(x2)
-            new_y2[i] = y2
-            new_x2[i] = x2
+            chosen_x_hip = start_x_hip
+            osc_hip= odeint(van_der_pol_coupled_hip, [start_y_hip[i], start_x_hip[i]], [count-oscillator_step, count])
+            x2 = osc_hip[1][1]
+            y2 = osc_hip[1][0]
+            x_list_hip.append(x2)
+            new_y_hip[i] = y2
+            new_x_hip[i] = x2
 
-        start_y = new_y
-        start_x = new_x
-        start_y2 = new_y2
-        start_x2 = new_x2
+        start_y_foot = new_y_foot
+        start_x_foot = new_x_foot
+        start_y_hip = new_y_hip
+        start_x_hip = new_x_hip
 
 
         time_array.append(timer)
-        oscillator_values2[0].append(x_list2[0])
-        oscillator_values2[1].append(x_list2[1])
-        oscillator_values2[2].append(x_list2[2])
-        oscillator_values2[3].append(x_list2[3])
-        oscillator_values[0].append(x_list[0])
-        oscillator_values[1].append(x_list[1])
-        oscillator_values[2].append(x_list[2])
-        oscillator_values[3].append(x_list[3])
-        limb_values[0].append(fr_foot_rot)
-        limb_values[1].append(br_foot_rot)
-        limb_values[2].append(fl_foot_rot)
-        limb_values[3].append(bl_foot_rot)
 
-        limb_values[4].append(fr_hip_rot)
-        limb_values[5].append(br_hip_rot)
-        limb_values[6].append(fl_hip_rot)
-        limb_values[7].append(bl_hip_rot)
+        for n in range(4):
+            oscillator_values[n].append(x_list_foot[n])
+            oscillator_values2[n].append(x_list_hip[n])
 
-        foot = [front_right_foot, back_right_foot, front_left_foot, back_left_foot]
 
-        for indx, val in enumerate(foot):
-            p.setJointMotorControl2(quadruped, val,p.POSITION_CONTROL,-jointOffsets[val]+(foot_angle*x_list[indx]*van_multi), force=maxForce)
-        # p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8]+(foot_angle*x_list[1]*van_multi), force=maxForce)
-        # p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5]+(foot_angle*x_list[2]*van_multi), force=maxForce)
-        # p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL,  -jointOffsets[11]+(foot_angle*x_list[3]*van_multi), force=maxForce)
-        #
-        p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOffsets[1]+(hip_angle*x_list2[0]*van_multi), force=maxForce)
-        p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL,  -jointOffsets[7]+(hip_angle*x_list2[1]*van_multi), force=maxForce)
-        p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL,  -jointOffsets[4]+(hip_angle*x_list2[2]*van_multi), force=maxForce)
-        p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,   -jointOffsets[10]+(hip_angle*x_list2[3]*van_multi), force=maxForce)
-        p.setJointMotorControl2(quadruped, front_left_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
-        p.setJointMotorControl2(quadruped, front_right_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
-        p.setJointMotorControl2(quadruped, back_left_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
-        p.setJointMotorControl2(quadruped, back_right_shoulder,p.POSITION_CONTROL,  0, force=maxForce)
+
+        feet = [front_right_foot, back_right_foot, front_left_foot, back_left_foot]
+        hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
+        shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
+
+        for i, v in enumerate(feet):
+            realval = p.getJointState(quadruped, v)[0]
+            limb_values[i].append(realval)
+            p.setJointMotorControl2(quadruped, v,p.POSITION_CONTROL,-jointOffsets[v]+(foot_angle*x_list_foot[i]*van_multi), force=maxForce)
+
+        for i, v in enumerate(hips):
+            realval = p.getJointState(quadruped, v)[0]
+            limb_values[i+4].append(realval)
+            p.setJointMotorControl2(quadruped, v,p.POSITION_CONTROL, -jointOffsets[v]+(hip_angle*x_list_hip[i]*van_multi), force=maxForce)
+
+        for i, v in enumerate(shoulders):
+            p.setJointMotorControl2(quadruped, v,p.POSITION_CONTROL,  0, force=maxForce)
 
 run_name = 'laikago-sin-'+datetime.datetime.today().strftime('%Y-%s')+"-"
 run_log = open(run_name+"log.txt", "w+")
@@ -436,8 +405,8 @@ for items in run_array:
     string += " ]\n"
     run_log.write(string)
 run_log.close()
-plot = "physics2"
-if plot == "osc2":
+plot = "oscillators"
+if plot == "osc_hip":
     plt.figure(figsize=(20,20))
     plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
     foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
