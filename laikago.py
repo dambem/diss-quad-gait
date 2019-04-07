@@ -4,18 +4,18 @@ import time
 import matplotlib.pyplot as plt
 import datetime
 from scipy.integrate import odeint
-
+import scipy.signal as signal
 
 
 # Oscillator Values, Initiated at 1
-start_y_foot = [1,1,1,1]
+start_y_foot = [2,2,2,2]
 start_x_foot = [0,0,0,0]
-new_y_foot = [1,1,1,1]
+new_y_foot = [2,2,2,2]
 new_x_foot = [0,0,0,0]
 
-start_y_hip = [1,1,1,1]
+start_y_hip = [2,2,2,2]
 start_x_hip = [0,0,0,0]
-new_y_hip = [1,1,1,1]
+new_y_hip = [2,2,2,2]
 new_x_hip = [0,0,0,0]
 
 count = 0
@@ -24,10 +24,10 @@ run_array = []
 gravity = -9.8
 time_step = 1./500
 # frequency_multiplier = 175
-foot_angle = 6
-hip_angle = 7
-max_force = 30
-oscillator_step = 0.025
+foot_angle = 12
+hip_angle = 6
+max_force = 40
+oscillator_step = 0.015
 
 w = 20
 van_multi = 0.1
@@ -187,6 +187,12 @@ def van_der_pol_oscillator_deriv(x, t):
     res = np.array([x0, x1])
     return res
 
+def van_der_pol_oscillator_deriv_pure(x, t):
+    x0 = x[1]
+    x1 = 1 * ((1 - (x[0] ** 2.0)) * x0) - x[0]*1
+    res = np.array([x0, x1])
+    return res
+
 def van_der_pol_coupled_foot(x, t):
     # global chosen_x_foot
     x0 = x[1]
@@ -235,7 +241,8 @@ cost_of_transport= []
 displacement_array = []
 sample_timer = 0
 prev_value = 0
-
+time0 = 0
+time1 = 0
 # TODO, CHANGE SAMPLING RATE TO TIME FOR A FULL OSCILLATION
 sampling_rate = time_step*100
 while (timer <= 10):
@@ -248,6 +255,8 @@ while (timer <= 10):
     if (run_simulation):
         x_list_foot = []
         x_list_hip = []
+        y_list_foot = []
+        y_list_hip = []
         oscillator_step = p.readUserDebugParameter(time_stepId)
         count += oscillator_step
         timer += time_step
@@ -339,7 +348,7 @@ while (timer <= 10):
                       [-0.1, 0, -0.1, 0.1],
                       [0.1, -0.1, 0, -0.1],
                       [-0.1, 0.1, -0.1, 0]]
-        lamb = lamb_walk2
+        lamb = lamb_walk
 
 
         for i in range(4):
@@ -349,6 +358,7 @@ while (timer <= 10):
             x = osc_foot[1][1]
             y = osc_foot[1][0]
             x_list_foot.append(x)
+            y_list_foot.append(y)
             new_y_foot[i] = y
             new_x_foot[i] = x
 
@@ -359,6 +369,8 @@ while (timer <= 10):
             x2 = osc_hip[1][1]
             y2 = osc_hip[1][0]
             x_list_hip.append(x2)
+            y_list_hip.append(y2)
+
             new_y_hip[i] = y2
             new_x_hip[i] = x2
 
@@ -369,10 +381,12 @@ while (timer <= 10):
 
 
         time_array.append(timer)
-
         for n in range(4):
             oscillator_values[n].append(x_list_foot[n])
             oscillator_values2[n].append(x_list_hip[n])
+
+
+
 
 
 
@@ -435,6 +449,11 @@ if plot == "osc_hip":
 
     plt.show()
 if plot == "oscillators":
+    peakind = signal.find_peaks_cwt(oscillator_values[0], time_array, min_snr=5)
+    peakind = np.array(peakind)
+    print (peakind)
+
+
     plt.figure(figsize=(20,20))
     plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
     foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]

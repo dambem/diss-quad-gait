@@ -15,11 +15,17 @@ def van_der_pol_oscillator_deriv(x, t):
     return res
 
 
-ts = np.linspace(0.0, 2, 100)
+def van_der_pol_oscillator_deriv_pure(x, t):
+    x0 = x[1]
+    x1 = 1 * ((1 - (x[0] ** 2.0)) * x0) - x[0]*1
+    res = np.array([x0, x1])
+    return res
 
-osc = odeint(van_der_pol_oscillator_deriv, [1, 0], ts)
+
+ts = np.linspace(0, np.pi*4, 100)
+osc = odeint(van_der_pol_oscillator_deriv_pure, [2, 0], ts)
+
 plt.figure(figsize=(15,15))
-osc = odeint(van_der_pol_oscillator_deriv, [1, 0], ts)
 plt.subplot(2, 1, 1)
 plt.ylabel("Oscillator Output (x)")
 plt.xlabel("Derivative Of Output (x')")
