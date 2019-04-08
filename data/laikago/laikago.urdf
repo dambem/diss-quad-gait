@@ -18,6 +18,7 @@
        <material name="yellow">
         <color rgba="0.95 0.75 0.05 1"/>
       </material>
+
     </visual>
     <collision>
       <origin rpy="-1.57 0 0" xyz="0 0 0.043794"/>

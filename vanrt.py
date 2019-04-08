@@ -36,9 +36,7 @@ k1 = 1
 q1 = 1
 # feedback
 feed = 0
-# def van_der_pol_coupled(x, t):
-#     right_side = q1 + k1*np.sin(k2*t) + feed
-# while ()
+
 values = []
 period = []
 time_array = []
@@ -46,8 +44,6 @@ counter = 0
 while (len(period) < 3):
     osc = odeint(van_der_pol_oscillator_deriv_pure, [start_y, start_x], [count-0.005, count],mxstep=500000)
     integral = 0
-    # plt.subplot(2, 1, 1)
-    # plt.scatter(osc[1][0], osc[1][1])
     plt.subplot(1, 1, 1)
     values.append(osc[1][1])
     if (len(values) >= 4):
@@ -61,15 +57,17 @@ while (len(period) < 3):
     start_x = osc[1][1]
     count += 0.005
     counter += 1
+plt.ylabel("Oscillator x output")
+plt.xlabel("Time t")
+plt.title("Van Der Pol Oscillator Output Over Time")
 plt.plot(time_array,values)
     # plt.pause(0.0001)
+
 plt.scatter(period[0][0], period[0][1], s=100, c='r', marker="x")
 plt.scatter(period[1][0], period[1][1], s=100, c='r', marker="x")
 period2 = round(period[1][0]-period[0][0], 2)
 plt.annotate ('', (period[0][0], period[0][1]), (period[1][0], period[1][1]), arrowprops={'arrowstyle':'<->'})
 plt.annotate('T = '+str(period2), xy=(5,-2.5), xycoords='data', xytext=(0, 0), textcoords='offset points')
 
-# print(period)
-# print(period[1]-period[0])
-# print(period[2]-period[1])
+
 plt.show()

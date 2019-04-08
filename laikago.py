@@ -22,13 +22,13 @@ count = 0
 # Initial Configuration (Can Later Be Changed Through User Parameters)
 run_array = []
 gravity = -9.8
-time_step = 1./500
+time_step = 1/500
 # frequency_multiplier = 175
-foot_angle = 12
+foot_angle = 10
 hip_angle = 6
 max_force = 40
-oscillator_step = 0.015
-
+oscillator_step = 0.02
+hip_height = 1
 w = 20
 van_multi = 0.1
 van_multi2 = 0.1
@@ -50,7 +50,11 @@ front_left_shoulder = 6
 back_right_shoulder = 9
 back_left_shoulder = 0
 
+feet = [front_right_foot, back_right_foot, front_left_foot, back_left_foot]
+hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
+shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
 
+end_period = 0
 
 run_simulation = 0
 p.connect(p.GUI)
@@ -133,23 +137,17 @@ jointOffsets[10] -= -0.5
 # sin4 = np.sin(np.pi*3/4)
 run_simulation = 1
 p.setRealTimeSimulation(run_simulation)
+mode = p.PD_CONTROL
 # Begins timer to allow for sin function to work (Will replace with vanderpol in future)
-p.setJointMotorControl2(quadruped, front_right_hip,p.POSITION_CONTROL, -jointOffsets[1], force=maxForce)
-p.setJointMotorControl2(quadruped, front_left_hip,p.POSITION_CONTROL, -jointOffsets[4], force=maxForce)
-p.setJointMotorControl2(quadruped, back_right_hip,p.POSITION_CONTROL, -jointOffsets[7], force=maxForce)
-p.setJointMotorControl2(quadruped, back_left_hip,p.POSITION_CONTROL,  -jointOffsets[10], force=maxForce)
-p.setJointMotorControl2(quadruped, front_right_foot,p.POSITION_CONTROL, -jointOffsets[2], force=maxForce)
-p.setJointMotorControl2(quadruped, front_left_foot,p.POSITION_CONTROL, -jointOffsets[5], force=maxForce)
-p.setJointMotorControl2(quadruped, back_right_foot,p.POSITION_CONTROL, -jointOffsets[8], force=maxForce)
-p.setJointMotorControl2(quadruped, back_left_foot,p.POSITION_CONTROL, -jointOffsets[11], force=maxForce)
-p.enableJointForceTorqueSensor(quadruped, front_right_hip)
-p.enableJointForceTorqueSensor(quadruped, front_left_hip)
-p.enableJointForceTorqueSensor(quadruped, back_right_hip)
-p.enableJointForceTorqueSensor(quadruped, back_left_hip)
-p.enableJointForceTorqueSensor(quadruped, front_right_foot)
-p.enableJointForceTorqueSensor(quadruped, front_left_foot)
-p.enableJointForceTorqueSensor(quadruped, back_right_foot)
-p.enableJointForceTorqueSensor(quadruped, back_left_foot)
+for i, v in enumerate(hips):
+    p.setJointMotorControl2(quadruped, v,mode, -jointOffsets[i], force=maxForce)
+    p.enableJointForceTorqueSensor(quadruped, v)
+
+for i, v in enumerate(feet):
+    p.setJointMotorControl2(quadruped, v, mode, -jointOffsets[i], force=maxForce)
+    p.enableJointForceTorqueSensor(quadruped, v)
+
+
 foot_angleId = p.addUserDebugParameter("Foot Angle of rotation", 0, 20, foot_angle)
 hip_angleId = p.addUserDebugParameter("Hip Angle of rotation", 0, 20, hip_angle)
 p.useFixedBase = True
@@ -168,7 +166,10 @@ turn_array = []
 time_array = []
 x_tilt_array = []
 y_tilt_array = []
+period_foot = [[],[],[],[]]
+
 z_tilt_array = []
+froude_number_array = []
 lamb_trot = -0.1
 lamb_pace = -0.1
 lamb_bound = -0.1
@@ -180,7 +181,8 @@ lambBoundId = p.addUserDebugParameter("Lamb Bound",lamb_bound, -lamb_bound, lamb
 lambTrotId = p.addUserDebugParameter("Lamb Trot", lamb_trot, -lamb_trot, lamb_trot)
 current_i = 0
 current_i2 = 0
-
+found = 0;
+start_period = 0;
 def van_der_pol_oscillator_deriv(x, t):
     x0 = x[1]
     x1 = mu * ((p_v - (x[0] ** 2.0)) * x0) - x[0]*w
@@ -241,10 +243,12 @@ cost_of_transport= []
 displacement_array = []
 sample_timer = 0
 prev_value = 0
+counter = 0
 time0 = 0
 time1 = 0
 # TODO, CHANGE SAMPLING RATE TO TIME FOR A FULL OSCILLATION
 sampling_rate = time_step*100
+start = time.time()
 while (timer <= 10):
     keys = p.getKeyboardEvents()
     if qKey in keys and keys[qKey]&p.KEY_WAS_TRIGGERED:
@@ -295,7 +299,8 @@ while (timer <= 10):
             velocity_array.append(velocity)
             sampling_array.append(timer)
             measurements_taken = (sample_timer/time_step)
-
+            froude_number = (velocity**2)/gravity*hip_height
+            froude_number_array.append(froude_number)
             force_avg = total_force
             force_values.append(force_avg)
             power_avg = (total_force*displacement)/sampling_rate
@@ -350,7 +355,7 @@ while (timer <= 10):
                       [-0.1, 0.1, -0.1, 0]]
         lamb = lamb_walk
 
-
+        end = time.time()
         for i in range(4):
             current_i = i
             chosen_x_foot = start_x_foot
@@ -361,6 +366,21 @@ while (timer <= 10):
             y_list_foot.append(y)
             new_y_foot[i] = y
             new_x_foot[i] = x
+        if (len(oscillator_values[0]) >= 3):
+            nl = counter-1
+            current = oscillator_values[0][nl] - oscillator_values[0][nl-1]
+            previous = oscillator_values[0][nl-1] - oscillator_values[0][nl-2]
+            if(current >= 0 and previous <= 0):
+                found += 1
+                if (found == 1):
+                    start_period = time.time()
+                if (found == 2):
+                    end_period = time.time()
+                    found = 0
+                    period_foot[0].append([end_period-start_period])
+
+
+
 
         for i in range(4):
             current_i2 = i
@@ -389,11 +409,6 @@ while (timer <= 10):
 
 
 
-
-        feet = [front_right_foot, back_right_foot, front_left_foot, back_left_foot]
-        hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
-        shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
-
         for i, v in enumerate(feet):
             realval = p.getJointState(quadruped, v)[0]
             limb_values[i].append(realval)
@@ -406,11 +421,11 @@ while (timer <= 10):
 
         for i, v in enumerate(shoulders):
             p.setJointMotorControl2(quadruped, v,p.POSITION_CONTROL,  0, force=maxForce)
-
 run_name = 'laikago-sin-'+datetime.datetime.today().strftime('%Y-%s')+"-"
 run_log = open(run_name+"log.txt", "w+")
+print(period_foot)
 
-
+# EXPERIMENT DESIGN
 for items in run_array:
     string = ""
     string = str(items[0])+": [ "
@@ -420,6 +435,9 @@ for items in run_array:
     run_log.write(string)
 run_log.close()
 plot = "oscillators"
+if plot == "stride":
+    plt.figure(figsize=(20,20))
+    plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
 if plot == "osc_hip":
     plt.figure(figsize=(20,20))
     plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
@@ -449,11 +467,6 @@ if plot == "osc_hip":
 
     plt.show()
 if plot == "oscillators":
-    peakind = signal.find_peaks_cwt(oscillator_values[0], time_array, min_snr=5)
-    peakind = np.array(peakind)
-    print (peakind)
-
-
     plt.figure(figsize=(20,20))
     plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
     foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
