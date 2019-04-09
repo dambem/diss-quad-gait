@@ -28,8 +28,8 @@ van_multi = 0.1
 
 mu = 1
 p_v = 2
-num_iterations = 11000
-num_epochs = 20
+num_iterations = 1100
+num_epochs = 2
 e_b = 999
 # Hip Configurations (SET, DO NOT CHANGE)start_x_foot
 front_right_hip = 1
@@ -343,18 +343,9 @@ for e in range(num_epochs):
             p.stepSimulation()
     p.resetSimulation()
 
-run_name = 'experiment-'+datetime.datetime.today().strftime('%Y-%s')+"-"
-run_log = open(run_name+"log.txt", "w+")
+
 # EXPERIMENT DESIGN
-for items in run_array:
-    string = ""
-    string = str(items[0])+": [ "
-    for specific in items[1]:
-        string += "[V: " + str(specific[0]) + " T: " + str(specific[1]) + "]"
-    string += " ]\n"
-    run_log.write(string)
-run_log.close()
-plot = ""
+
 # plot = "physics2"
 if plot == "map":
 
@@ -455,27 +446,43 @@ if plot == "oscillators":
     # plt.yticks(np.arange(0, , 1))
     # plt.xticks(np.arange(0, , 1))
     plt.show()
-full_force = np.sum(force_array[e_b:])
-final_time = time_array[-1] - time_array[e_b]
-distance_val = distance_array[-1] - distance_array[e_b]
-velocity = distance_val/final_time
-froude_number = (velocity**2)/-gravity*hip_height
-power_avg = (full_force*distance_val)
-cost_transport = power_avg/(total_mass*abs(gravity)*velocity)
 
-print("Velocity")
-print(velocity)
-print("Froude Number")
-print(froude_number)
-print("Force")
-print(full_force)
-print("Final Time")
-print(final_time)
-print(final_time+1/500)
-print("Distance")
-print(distance_val)
-print("Cost Of Transport")
-print(cost_transport)
+final_time = np.zeros(num_epochs)
+distance_val = np.zeros(num_epochs)
+velocity = np.zeros(num_epochs)
+froude_number = np.zeros(num_epochs)
+force_values = np.zeros(num_epochs)
+cost_transport = np.zeros(num_epochs)
+
+for n in range(num_epochs):
+    final_time[n] = time_array[n, -1] - time_array[n, e_b]
+    distance_val[n] = distance_array[n, -1] - distance_array[n, e_b]
+    velocity[n] = distance_val[n]/final_time[n]
+    froude_number[n] = (velocity[n]**2)/-gravity*hip_height
+    force_values[n] = np.sum(force_array[n,e_b:])
+    power_avg = (full_force[n]*distance_val[n])
+    cost_transport[n] = power_avg/(total_mass*abs(gravity)*velocity[n])
+
+
+mean_velocity = np.mean(velocity)
+mean_froude = np.mean(froude_number)
+mean_force = np.mean(full_force)
+mean_time = np.mean(final_time)
+mean_distance =  np.mean(distance_val)
+mean_cost = np.mean(cost_transport)
+
+run_name = 'experiment-osc'+oscillator_step+'force'+max_force+datetime.datetime.today().strftime('%Y-%s')+"-"
+run_log = open(run_name+"log.txt", "w+")
+saved_calc = [mean_velocity, mean_froude, mean_force, mean_time, mean_distance, mean_cost]
+string = "Oscillator Step: " + oscillator_step + "\n"
+string += "Max Force: " + max_force + "\n"
+run_log.write(string)
+for item in saved_calc:
+    string += item + "\n"
+    run_log.write(string)
+run_log.close()
+
+plot = ""
 if plot == "physics2":
     plt.figure(figsize=(20,20))
     # plt.subplot(1,1,1)
