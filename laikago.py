@@ -7,6 +7,7 @@ from scipy.integrate import odeint
 import scipy.signal as signal
 import sys
 
+
 def deg_to_rad(deg):
     return deg*(np.pi/180)
 
@@ -16,8 +17,8 @@ run_array = []
 gravity = -9.8
 # frequency_multiplier = 175
 time_step = 1/500
-foot_angle = deg_to_rad(sys.argv[6])
-hip_angle = deg_to_rad(sys.argv[7])
+foot_angle = deg_to_rad(float(sys.argv[6]))
+hip_angle = deg_to_rad(float(sys.argv[7]))
 
 max_force = float(sys.argv[1])
 oscillator_step = float(sys.argv[2])
@@ -383,6 +384,8 @@ run_log = open(run_name+"log.txt", "w+")
 saved_calc = [[mean_velocity, std_velocity], [mean_froude, std_froude], [mean_distance, std_distance], [mean_cost, std_cost], [mean_period, std_period]]
 string = "Oscillator Step: " + str(oscillator_step) + "\n"
 string += "Max Force: " + str(max_force) + "\n"
+string += "Leg Rotation: " + str(foot_angle) + "\n"
+string += "Hip Rotation: " + str(hip_angle) + "\n"
 string += ""
 run_log.write(string)
 for item in saved_calc:
