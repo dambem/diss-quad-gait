@@ -14,9 +14,9 @@
 # done
 
 
-for leg in 4 6 8 10 12 14 16 18 20
+for leg in 4 6 8 10 12 14 16 18
 do
-  for hip in 4 6 8 10 12 14 16 18 20
+  for hip in 4 6 8 10 12 14 16 18
   do
     for gait in 0 1 2
     do

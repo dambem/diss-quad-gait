@@ -50,7 +50,7 @@ hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
 shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
 
 end_period = 0
-p.connect(p.DIRECT)
+p.connect(p.GUI)
 position_array = np.zeros((num_epochs, 3, num_iterations))
 time_array = np.zeros((num_epochs, num_iterations))
 # displacement_array = np.zeros(num_iterations)
