@@ -13,14 +13,21 @@
 #   python laikago.py $force 0.008 2 ex2_3 n 10 6
 # done
 
-
-for leg in 4 6 8 10 12 14 16 18
+echo "Beginning"
+for leg in 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20
 do
-  for hip in 4 6 8 10 12 14 16 18
+  for hip in 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20
   do
-    for gait in 0 1 2
+    for oscillator in 0.010 0.008 0.006 0.004 0.002
     do
-      python laikago.py 70 0.008 $gait ex_ang n $leg $hip
+      for force in 020 030 040 050 060 070 080 090 100 120
+      do
+        # for gait in 0
+        # do
+        echo l $leg h $hip o $oscillator f $force
+        python laikago.py $force $oscillator 0 big $leg $hip
+        # done
+      done
     done
   done
 done

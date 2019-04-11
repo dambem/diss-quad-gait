@@ -17,8 +17,8 @@ run_array = []
 gravity = -9.8
 # frequency_multiplier = 175
 time_step = 1/500
-foot_angle = deg_to_rad(float(sys.argv[6]))
-hip_angle = deg_to_rad(float(sys.argv[7]))
+foot_angle = deg_to_rad(float(sys.argv[5]))
+hip_angle = deg_to_rad(float(sys.argv[6]))
 
 max_force = float(sys.argv[1])
 oscillator_step = float(sys.argv[2])
@@ -50,7 +50,7 @@ hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
 shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
 
 end_period = 0
-p.connect(p.GUI)
+p.connect(p.DIRECT)
 position_array = np.zeros((num_epochs, 3, num_iterations))
 time_array = np.zeros((num_epochs, num_iterations))
 # displacement_array = np.zeros(num_iterations)
@@ -65,13 +65,13 @@ for e in range(num_epochs):
     # Oscillator Values, Initiated at 1
     start_y_foot = [2,2,2,2]
     start_x_foot = [0,0,0,0]
-    new_y_foot = [2,2,2,2]
-    new_x_foot = [0,0,0,0]
+    new_y_foot =   [2,2,2,2]
+    new_x_foot =   [0,0,0,0]
 
     start_y_hip = [2,2,2,2]
     start_x_hip = [0,0,0,0]
-    new_y_hip = [2,2,2,2]
-    new_x_hip = [0,0,0,0]
+    new_y_hip =   [2,2,2,2]
+    new_x_hip =   [0,0,0,0]
 
     run_simulation = 0
     plane = p.loadURDF("plane.urdf")
@@ -84,10 +84,7 @@ for e in range(num_epochs):
     debug = False;
     cube = p.loadURDF("cube.urdf", [0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
     cube2 = p.loadURDF("cube.urdf", [-0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
-    if sys.argv[5] == "n":
-        quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
-    else:
-        quadruped = p.loadURDF("laikago_long_legs/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
+    quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
     base_dynamics_info = p.getDynamicsInfo(quadruped, -1)
     frh_dynamics_info = p.getDynamicsInfo(quadruped, front_right_hip)
     flh_dynamics_info = p.getDynamicsInfo(quadruped, front_left_hip)
@@ -379,17 +376,18 @@ mean_cost = np.mean(cost_transport)
 std_cost = np.std(cost_transport)
 mean_period = np.mean(period_average)
 std_period = np.std(period_average)
-run_name = sys.argv[4]+'/experiment-osc'+str(sys.argv[3])+str(oscillator_step)+'force'+str(max_force)+datetime.datetime.today().strftime('%Y-%s')+"-"
+run_name = sys.argv[4]+"/f"+sys.argv[1]+"o"+sys.argv[2]+"g"+sys.argv[3]+"l"+sys.argv[4]+"h"+sys.argv[5]
 run_log = open(run_name+"log.txt", "w+")
 saved_calc = [[mean_velocity, std_velocity], [mean_froude, std_froude], [mean_distance, std_distance], [mean_cost, std_cost], [mean_period, std_period]]
 string = "Oscillator Step: " + str(oscillator_step) + "\n"
 string += "Max Force: " + str(max_force) + "\n"
+string += "Gait: " + sys.argv[3] + "\n"
 string += "Leg Rotation: " + str(foot_angle) + "\n"
 string += "Hip Rotation: " + str(hip_angle) + "\n"
 string += ""
 run_log.write(string)
 for item in saved_calc:
-    string = str(item[0])+":S " + str(item[1]) + "\n"
+    string = str(item[0])+":"+str(item[1])+"\n"
     run_log.write(string)
 run_log.close()
 
