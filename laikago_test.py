@@ -73,7 +73,7 @@ new_y_hip =   [2,2,2,2]
 new_x_hip =   [0,0,0,0]
 
 run_simulation = 0
-plane = p.loadURDF("plane.urdf")
+# plane = p.loadURDF("plane.urdf")
 p.setGravity(0, 0, gravity)
 p.setTimeStep(time_step)
 p.setDefaultContactERP(0)
@@ -81,17 +81,22 @@ p.setDefaultContactERP(0)
 urdfFlags = p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
 
 debug = False;
-cube = p.loadURDF("cube.urdf", [0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
-cube2 = p.loadURDF("cube.urdf", [-0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
+# cube = p.loadURDF("cube.urdf", [0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
+# cube2 = p.loadURDF("cube.urdf", [-0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
 quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
-quadruped2 = p.loadURDF("laikago/laikago.urdf",[0,1,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
+# quadruped2 = p.loadURDF("laikago/laikago.urdf",[0,1,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
 base_dynamics_info = p.getDynamicsInfo(quadruped, -1)
 frh_dynamics_info = p.getDynamicsInfo(quadruped, front_right_hip)
 flh_dynamics_info = p.getDynamicsInfo(quadruped, front_left_hip)
 pos_ori = p.getBasePositionAndOrientation(quadruped)
-pos_ori2 = p.getBasePositionAndOrientation(quadruped2)
+# pos_ori2 = p.getBasePositionAndOrientation(quadruped2)
 print(pos_ori)
-print(pos_ori2)
-p.getCameraImage(480,320)
+# print(pos_ori2)
+# p.createVisualShape(p.GEOM_PLANE)
+cube = p.loadURDF("cube2.urdf", [0.1, 0, 0.5], [1, 1, 0, 0], flags = urdfFlags, useFixedBase=True)
+p.getCameraImage(1920,1080)
+p.setRealTimeSimulation(1)
 while True:
-    p.setRealTimeSimulation(1)
+    p.setRealTimeSimulation(0)
+# while True:
+    # print ("Working ")
