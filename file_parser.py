@@ -314,7 +314,7 @@ def plot_big2():
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
         ax.legend()
     plt.show()
-# plot_big()
+plot_big()
 # plot_big2
 plot_big2()
 # plot_ex2()
