@@ -243,11 +243,12 @@ def plot_big2():
     # 6 = time period
     # fig = plt.figure()
     # ax = fig.gca(projection='3d')
-    fig, ax = plt.subplots(1, 2)
+
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
     forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100", "120"]
     leg = ["10", "11", "12", "13", "14", "15", "16", "17",  "18", "19", "20"]
     hip =  ["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+    fig, ax = plt.subplots()
     for n in values:
         # for j in values:
         val = parse_big2("*", n, "*", "*")
@@ -262,16 +263,16 @@ def plot_big2():
         # ax.set_zlabel("Distance")
         # ax.set_ylabel("Cost Of Locomotion")
         # ax.scatter(val[:,3,0],  float(j), float(n))
-        plt.subplot(1, 1)
+        plt.title("Average Froude Number against Oscillator Time Step")
         ax.set_xlabel("Oscillator Time Steps")
         ax.set_ylabel("Average Froude Number")
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
         ax.legend()
-        plt.subplot(1, 2)
     plt.show()
-    for n in values:
+    fig, ax = plt.subplots()
+    for n in forces:
         # for j in values:
-        val = parse_big2("*", n, "*", "*")
+        val = parse_big2(n, "*", "*", "*")
         phase_difference = ((1/500)/float(n)*2)
         period = val[:,6,0]
         period2 = period/phase_difference
@@ -283,12 +284,35 @@ def plot_big2():
         # ax.set_zlabel("Distance")
         # ax.set_ylabel("Cost Of Locomotion")
         # ax.scatter(val[:,3,0],  float(j), float(n))
-        plt.subplot(1, 1)
-        ax.set_xlabel("Oscillator Time Steps")
+        plt.title("Average Froude Number against Force Applied")
+        ax.set_xlabel("Max Force Applied")
         ax.set_ylabel("Average Froude Number")
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
         ax.legend()
-        plt.subplot(1, 2)
+    plt.show()
+
+    leg=["05", "06", "07", "08", "09"]
+    fig, ax = plt.subplots()
+    for n in leg:
+        # for j in values:
+        val = parse_big2("*", "*", n, "*")
+
+        phase_difference = ((1/500)/float(n)*2)
+        period = val[:,6,0]
+        period2 = period/phase_difference
+        cost_per_distance = val[:,5,0]/val[:,4,0]
+        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
+        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+
+        # ax.set_xlabel("Froude Number")
+        # ax.set_zlabel("Distance")
+        # ax.set_ylabel("Cost Of Locomotion")
+        # ax.scatter(val[:,3,0],  float(j), float(n))
+        plt.title("Average Froude Number against Leg Rotation")
+        ax.set_xlabel("Leg Rotation")
+        ax.set_ylabel("Average Froude Number")
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
+        ax.legend()
     plt.show()
 # plot_big()
 # plot_big2
