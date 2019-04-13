@@ -7,6 +7,42 @@ def deg_to_rad(deg):
     return deg*(np.pi/180)
 def rad_to_deg(rad):
     return rad/(np.pi/180)
+def parse_big():
+    filenames = sorted(glob.glob('big/*'))
+    # print(len(filenames))
+    values = np.zeros((len(filenames), 7, 3))
+    # print(np.shape(values))
+    val = 0
+    for f in filenames:
+        with open(f, 'r') as fp:
+            line = fp.readline()
+            line = line.split(":")
+            maxforce = fp.readline()
+            maxforce = maxforce.split(':')
+            gait = fp.readline()
+            leg_rot = fp.readline()
+            hip_rot = fp.readline()
+            line_c = 0
+            force_val = float(maxforce[1])
+            oscil_val = float(line[1])
+            values[val, line_c, 0] = force_val
+            line_c += 1
+            values[val, line_c, 0] = oscil_val
+            line_c += 1
+            while line:
+                line = fp.readline()
+                data = line.split(':')
+                if (len(data) == 1):
+                    continue;
+                val_d = float(data[0])
+                val_sd = float(data[1])
+                values[val, line_c, 0] = val_d
+                values[val, line_c, 1] = val_sd
+                values[val, line_c, 2] = force_val
+                line_c += 1
+            val += 1
+    return(values)
+
 def parse_ex2(gait):
     filenames = sorted(glob.glob('ex2_1/experiment-osc'+gait+'0*'))
     # print(len(filenames))
@@ -76,6 +112,9 @@ def plot_angles():
     ax.plot_trisurf(val2[:,0,0], val2[:,0,1], val2[:,3,0])
     ax.plot_trisurf(val3[:,0,0], val3[:,0,1], val3[:,3,0])
     plt.show()
+def dynamic_similarity(a, u, g, h, b, froude):
+    # froude = froude_number(u, g, h)
+    return (a*(froude)**b)
 
 def plot_ex2():
     val1 = parse_ex2("0")
@@ -93,15 +132,167 @@ def plot_ex2():
     relative_stride_length = distance/(amount_of_strides)
     print(relative_stride_length)
     # relative_stride length =
-    data = np.array((val1[:,1,0]/(0.3) ,relative_stride_length))
+    data = np.array((val1[:,1,0]/(0.3) ,distance/10))
 
     # data =np.sort(data)
     # print(data)
-
+    a = 2.4
+    u = 2
+    g = 9.8
+    # h = 2
+    b = 0.34
+    h = np.linspace(0.1, 0.6, 50)
+    for n in h:
+        plt.scatter(n, dynamic_similarity(a,u,g,h,b, n), marker='s', c='red')
     plt.scatter(data[0], data[1])
+    plt.title("Distance Against Froude Number")
     plt.xlabel("Froude Number")
     plt.ylabel("Distance")
     plt.show()
-plot_ex2()
+def plot_big():
+    # 2 = velocity
+    # 3 = froude
+    # 4 = distance
+    # 5 = cost
+    # 6 = time period
+    val1 = parse_big()
+
+    cost_per_distance = val1[:,5,0]/val1[:,4,0]
+    cost_per_distance = np.clip(cost_per_distance, 0, 1000)
+    cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+    time_period = val1[:,6,0]
+    amount_of_strides = np.ceil(20/(time_period))
+    print(amount_of_strides)
+    distance = val1[:,4,0]
+
+    relative_stride_length = distance/(amount_of_strides)
+    print(relative_stride_length)
+    # relative_stride length =
+    data = np.array((val1[:,3,0]/(0.3) , distance, val1[:,0,0], val1[:,1,0], cost_per_distance))
+
+    # data =np.sort(data)
+    # print(data)
+    a = 2.4
+    u = 2
+    g = 9.8
+    # h = 2
+    b = 0.34
+    h = np.linspace(0, 0.3, 100)
+    for n in h:
+        plt.scatter(n, dynamic_similarity(a,u,g,h,b, n), marker='s', c='red')
+    plt.scatter(data[0], data[1])
+    # plt.scatter()
+    plt.title("Distance Against Froude Number")
+    plt.xlabel("Froude Number")
+    plt.ylabel("Distance")
+    plt.show()
+    fig, ax = plt.subplots()
+    id = 0
+    plt.xlabel("Froude Number")
+    plt.ylabel("Distance")
+    ax.scatter(data[0], data[1], s=cost_per_distance/10)
+    ax.legend(val1[:,0,0])
+    plt.show()
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.set_xlabel("Froude Number")
+    ax.set_zlabel("Distance")
+    ax.set_ylabel("Cost Of Locomotion")
+    ax.scatter(data[0],  cost_per_distance,data[1])
+    plt.show()
+def parse_big2(force, osc, l, h):
+    filenames = sorted(glob.glob('big/f'+force+'o'+osc+'g0l'+l+"h"+h))
+    # print(len(filenames))
+    values = np.zeros((len(filenames), 7, 3))
+    # print(np.shape(values))
+    val = 0
+    for f in filenames:
+        with open(f, 'r') as fp:
+            line = fp.readline()
+            line = line.split(":")
+            maxforce = fp.readline()
+            maxforce = maxforce.split(':')
+            gait = fp.readline()
+            leg_rot = fp.readline()
+            hip_rot = fp.readline()
+            line_c = 0
+            force_val = float(maxforce[1])
+            oscil_val = float(line[1])
+            values[val, line_c, 0] = force_val
+            line_c += 1
+            values[val, line_c, 0] = oscil_val
+            line_c += 1
+            while line:
+                line = fp.readline()
+                data = line.split(':')
+                if (len(data) == 1):
+                    continue;
+                val_d = float(data[0])
+                val_sd = float(data[1])
+                values[val, line_c, 0] = val_d
+                values[val, line_c, 1] = val_sd
+                values[val, line_c, 2] = force_val
+                line_c += 1
+            val += 1
+    return(values)
+def plot_big2():
+    # 2 = velocity
+    # 3 = froude
+    # 4 = distance
+    # 5 = cost
+    # 6 = time period
+    # fig = plt.figure()
+    # ax = fig.gca(projection='3d')
+    fig, ax = plt.subplots(1, 2)
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+    forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100", "120"]
+    leg = ["10", "11", "12", "13", "14", "15", "16", "17",  "18", "19", "20"]
+    hip =  ["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+    for n in values:
+        # for j in values:
+        val = parse_big2("*", n, "*", "*")
+        phase_difference = ((1/500)/float(n)*2)
+        period = val[:,6,0]
+        period2 = period/phase_difference
+        cost_per_distance = val[:,5,0]/val[:,4,0]
+        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
+        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+
+        # ax.set_xlabel("Froude Number")
+        # ax.set_zlabel("Distance")
+        # ax.set_ylabel("Cost Of Locomotion")
+        # ax.scatter(val[:,3,0],  float(j), float(n))
+        plt.subplot(1, 1)
+        ax.set_xlabel("Oscillator Time Steps")
+        ax.set_ylabel("Average Froude Number")
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
+        ax.legend()
+        plt.subplot(1, 2)
+    plt.show()
+    for n in values:
+        # for j in values:
+        val = parse_big2("*", n, "*", "*")
+        phase_difference = ((1/500)/float(n)*2)
+        period = val[:,6,0]
+        period2 = period/phase_difference
+        cost_per_distance = val[:,5,0]/val[:,4,0]
+        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
+        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+
+        # ax.set_xlabel("Froude Number")
+        # ax.set_zlabel("Distance")
+        # ax.set_ylabel("Cost Of Locomotion")
+        # ax.scatter(val[:,3,0],  float(j), float(n))
+        plt.subplot(1, 1)
+        ax.set_xlabel("Oscillator Time Steps")
+        ax.set_ylabel("Average Froude Number")
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
+        ax.legend()
+        plt.subplot(1, 2)
+    plt.show()
+# plot_big()
+# plot_big2
+plot_big2()
+# plot_ex2()
 # plot_angles()
 # plt.scatter(values[:, 0, 0], values[:, 3, 0])

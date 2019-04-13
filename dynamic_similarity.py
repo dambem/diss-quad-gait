@@ -16,7 +16,7 @@ def dynamic_similarity(a, u, g, h, b, froude):
     return (a*(froude)**b)
 
 
-h = np.linspace(0, 0.3, 50)
+h = np.linspace(0.1, 0.3, 50)
 h2 = np.linspace(0.3, 30, 50)
 plt.ylabel("Relative Stride Length")
 plt.xlabel("Froude Number")
