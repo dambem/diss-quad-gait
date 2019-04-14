@@ -149,6 +149,7 @@ def plot_ex2():
     plt.xlabel("Froude Number")
     plt.ylabel("Distance")
     plt.show()
+
 def plot_big():
     # 2 = velocity
     # 3 = froude
@@ -163,9 +164,11 @@ def plot_big():
     # values_between = np.where(froude_number <= 0.3)
     # print(values_between)
     froude = val1[:,3,0]/(0.3)
-    valid_runs = np.where(np.logical_and(cost_per_distance != 1000, cost_per_distance != 0))
+    valid_runs = np.where(cost_per_distance != 0, )
+    average_cost = np.mean(cost_per_distance)
+    print(average_cost)
 
-    froude_ind = np.where(np.logical_and(froude>=0.1, froude<=0.3))
+    froude_ind = np.where(froude<=0.3)
     print(len(froude_ind[0]))
     # values_between = np.where(values_between[0] >= 0.1)
     # print(values_between[0])
@@ -207,11 +210,12 @@ def plot_big():
     ax.legend(val1[:,0,0])
     plt.show()
     fig = plt.figure()
+    plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
     ax = fig.gca(projection='3d')
     ax.set_xlabel("Froude Number")
     ax.set_zlabel("Distance")
     ax.set_ylabel("Cost Of Locomotion")
-    ax.scatter(data[0],  cost_per_distance,data[1])
+    ax.scatter(data[0],  cost_per_distance,data[1], c=data[2])
     plt.show()
 def parse_big2(force, osc, l, h):
     filenames = sorted(glob.glob('big/f'+force+'o'+osc+'g0l'+l+"h"+h))
@@ -271,6 +275,11 @@ def plot_big2():
         cost_per_distance = val[:,5,0]/val[:,4,0]
         cost_per_distance = np.clip(cost_per_distance, 0, 1000)
         cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+        distance = val[:,4,0]
+
+        data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
+
+
 
         # ax.set_xlabel("Froude Number")
         # ax.set_zlabel("Distance")
@@ -280,6 +289,29 @@ def plot_big2():
         ax.set_xlabel("Oscillator Time Steps")
         ax.set_ylabel("Average Froude Number")
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
+        ax.legend()
+    plt.show()
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.set_xlabel("Froude Number")
+    ax.set_zlabel("Distance Travlled (M)")
+    ax.set_ylabel("Cost Of Locomotion Per Unit Distance (N/M)")
+    for n in forces:
+        val = parse_big2(n, "*", "*", "*")
+        cost_per_distance = val[:,5,0]/val[:,4,0]
+        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
+        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+        distance = val[:,4,0]
+        arrayvalues = np.where(cost_per_distance > 0)
+        # for j in arrayvalues[0]:
+        data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
+        froude = val[:,3,0]/(0.3)
+        froude_ind = np.where(froude<=0.3)
+        valid_runs = np.where(cost_per_distance != 0)
+        average_cost = np.mean(cost_per_distance)
+        print((len(froude_ind[0])/len(valid_runs[0]))*100)
+        # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
+        ax.scatter(data[0],  cost_per_distance, data[1], label=n)
         ax.legend()
     plt.show()
     fig, ax = plt.subplots()
@@ -300,7 +332,7 @@ def plot_big2():
         plt.title("Average Froude Number against Force Applied")
         ax.set_xlabel("Max Force Applied")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1])*2)
         ax.legend()
     plt.show()
 
@@ -327,9 +359,9 @@ def plot_big2():
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
         ax.legend()
     plt.show()
-plot_big()
+# plot_big()
 # plot_big2
-# plot_big2()
+plot_big2()
 # plot_ex2()
 # plot_angles()
 # plt.scatter(values[:, 0, 0], values[:, 3, 0])
