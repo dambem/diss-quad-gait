@@ -262,7 +262,7 @@ def plot_big2():
     # ax = fig.gca(projection='3d')
 
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
-    forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100", "120"]
+    forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100"]
     leg = ["10", "11", "12", "13", "14", "15", "16", "17",  "18", "19", "20"]
     hip =  ["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
     fig, ax = plt.subplots()
@@ -273,8 +273,8 @@ def plot_big2():
         period = val[:,6,0]
         period2 = period/phase_difference
         cost_per_distance = val[:,5,0]/val[:,4,0]
-        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
-        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+        cost_per_distance = np.clip(cost_per_distance, 0, None)
+        # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
         distance = val[:,4,0]
 
         data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
@@ -330,10 +330,11 @@ def plot_big2():
         # ax.set_ylabel("Cost Of Locomotion")
         # ax.scatter(val[:,3,0],  float(j), float(n))
         plt.title("Average Froude Number against Force Applied")
+        # plt.title("Laikago Performing Walking Gait In PyBullet")
         ax.set_xlabel("Max Force Applied")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1])*2)
-        ax.legend()
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1])*2, color='green')
+        # ax.legend()
     plt.show()
 
     leg=["05", "06", "07", "08", "09", "10"]
