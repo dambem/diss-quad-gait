@@ -42,28 +42,42 @@ values_y = []
 period = []
 time_array = []
 counter = 0
-while (len(period) < np.pi*2):
+find = False;
+x_output = []
+y_output = []
+time_output = []
+while (len(period) < np.pi):
     osc = odeint(van_der_pol_oscillator_deriv_pure, [start_y, start_x], [count-0.005, count],mxstep=500000)
     integral = 0
-    plt.subplot(1, 1, 1)
+    if find:
+        x_output.append(osc[1][1])
+        y_output.append(osc[1][0])
+        time_output.append(count)
     values.append(osc[1][1])
     values_y.append(osc[1][0])
+    time_array.append(count)
     if (len(values) >= 4):
         current = values[counter] - values[counter-1]
         previous = values[counter-1] - values[counter-2]
         if(current >= 0 and previous <= 0):
             period.append([count, osc[1][1]])
+            Find = True;
     prev_time = time.time()
-    time_array.append(count)
     start_y = osc[1][0]
     start_x = osc[1][1]
     count += 0.005
     counter += 1
 
-f, ax = plt.subplots(2)
+f, ax = plt.subplots(1,2)
 f.suptitle('Van Der Pol Pure Oscillator Values')
 ax[0].plot(time_array,values)
-ax[1].plot(values, values_y)
+ax[0].set_title("Oscillator X output against time")
+ax[0].set_xlabel("Time")
+ax[0].set_ylabel("Oscillator X output")
+ax[1].plot(values_y,values)
+ax[1].set_title("Oscillator X output against oscillator Y output")
+ax[1].set_xlabel("Oscillator Y output")
+ax[1].set_ylabel("Oscillator X output")
 # plt.scatter(period[0][0], period[0][1], s=100, c='r', marker="x")
 # plt.scatter(period[1][0], period[1][1], s=100, c='r', marker="x")
 # period2 = round(period[1][0]-period[0][0], 2)
