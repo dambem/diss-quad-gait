@@ -160,13 +160,26 @@ def plot_big():
     cost_per_distance = val1[:,5,0]/val1[:,4,0]
     cost_per_distance = np.clip(cost_per_distance, 0, 1000)
     cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+    # values_between = np.where(froude_number <= 0.3)
+    # print(values_between)
+    froude = val1[:,3,0]/(0.3)
+    valid_runs = np.where(np.logical_and(cost_per_distance != 1000, cost_per_distance != 0))
+
+    froude_ind = np.where(np.logical_and(froude>=0.1, froude<=0.3))
+    print(len(froude_ind[0]))
+    # values_between = np.where(values_between[0] >= 0.1)
+    # print(values_between[0])
+    # print(len(values_between[0]))
+    # print(len(val1[:,3,0]))
+    print((len(froude_ind[0])/len(valid_runs[0]))*100)
+    # # print(values_between)
     time_period = val1[:,6,0]
     amount_of_strides = np.ceil(20/(time_period))
-    print(amount_of_strides)
+    # print(amount_of_strides)
     distance = val1[:,4,0]
 
     relative_stride_length = distance/(amount_of_strides)
-    print(relative_stride_length)
+    # print(relative_stride_length)
     # relative_stride length =
     data = np.array((val1[:,3,0]/(0.3) , distance, val1[:,0,0], val1[:,1,0], cost_per_distance))
 
@@ -291,7 +304,7 @@ def plot_big2():
         ax.legend()
     plt.show()
 
-    leg=["05", "06", "07", "08", "09"]
+    leg=["05", "06", "07", "08", "09", "10"]
     fig, ax = plt.subplots()
     for n in leg:
         # for j in values:
@@ -316,7 +329,7 @@ def plot_big2():
     plt.show()
 plot_big()
 # plot_big2
-plot_big2()
+# plot_big2()
 # plot_ex2()
 # plot_angles()
 # plt.scatter(values[:, 0, 0], values[:, 3, 0])
