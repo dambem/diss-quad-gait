@@ -288,31 +288,37 @@ def plot_big2():
         plt.title("Average Froude Number against Oscillator Time Step")
         ax.set_xlabel("Oscillator Time Steps")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
-        ax.legend()
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='blue')
+        # ax.legend()
     plt.show()
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.set_xlabel("Froude Number")
-    ax.set_zlabel("Distance Travlled (M)")
-    ax.set_ylabel("Cost Of Locomotion Per Unit Distance (N/M)")
-    for n in forces:
-        val = parse_big2(n, "*", "*", "*")
-        cost_per_distance = val[:,5,0]/val[:,4,0]
-        cost_per_distance = np.clip(cost_per_distance, 0, 1500)
-        # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
-        distance = val[:,4,0]
-        arrayvalues = np.where(cost_per_distance > 0)
-        # for j in arrayvalues[0]:
-        data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
-        froude = val[:,3,0]/(0.3)
-        froude_ind = np.where(froude<=0.3)
-        valid_runs = np.where(cost_per_distance != 0)
-        average_cost = np.mean(cost_per_distance)
-        print((len(froude_ind[0])/len(valid_runs[0]))*100)
-        # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
-        ax.scatter(data[0],  cost_per_distance, data[1], label=n)
-        ax.legend()
+    ax.set_zlabel("Oscillator Time Step")
+    ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
+    ax.set_ylabel("Cost Of Locomotion Per Unit Distance")
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13"]
+    markers = ["D", "x", "o", "s", "*", "h", "v", "1", "2", "3"]
+    for g in range(len(values)):
+        for n in forces:
+            val = parse_big2(n, values[g], "*", "*")
+            cost_per_distance = val[:,5,0]/val[:,4,0]
+            cost_per_distance = np.clip(cost_per_distance, 0, 1500)
+            # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+            distance = val[:,4,0]
+            arrayvalues = np.where(cost_per_distance > 0)
+            # for j in arrayvalues[0]:
+            data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
+            froude = val[:,3,0]/(0.3)
+            froude_ind = np.where(np.logical_and(froude<=0.3, froude>=0.1))
+            # valid_run = np.where(froude  0)
+            # run_indices = valid_run[0]
+            average_cost = np.mean(cost_per_distance)
+            # for j in run_indices:
+            #     # print((len(froude_ind[0])/len(valid_runs[0]))*100)
+            #     # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
+            ax.scatter(froude,  cost_per_distance, float(values[g]), label=n)
+    ax.legend(forces, title="Max Force")
     plt.show()
     fig, ax = plt.subplots()
     for n in forces:
@@ -323,7 +329,7 @@ def plot_big2():
         period2 = period/phase_difference
         cost_per_distance = val[:,5,0]/val[:,4,0]
         cost_per_distance = np.clip(cost_per_distance, 0, 1000)
-        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+        # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
 
         # ax.set_xlabel("Froude Number")
         # ax.set_zlabel("Distance")
@@ -357,8 +363,8 @@ def plot_big2():
         plt.title("Average Froude Number against Leg Rotation")
         ax.set_xlabel("Leg Rotation")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]))
-        ax.legend()
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='red')
+        # ax.legend()
     plt.show()
 # plot_big()
 # plot_big2
