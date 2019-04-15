@@ -321,6 +321,7 @@ def plot_big2():
     ax.legend(forces, title="Max Force")
     plt.show()
     fig, ax = plt.subplots()
+    force_p = []
     for n in forces:
         # for j in values:
         val = parse_big2(n, "*", "*", "*")
@@ -330,6 +331,11 @@ def plot_big2():
         cost_per_distance = val[:,5,0]/val[:,4,0]
         cost_per_distance = np.clip(cost_per_distance, 0, 1000)
         # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+        froude = val[:,3,0]/(0.3)
+        froude_ind = np.where(np.logical_and(froude<=0.4, froude>=0.01))
+        perc = len(froude_ind[0])/len(val[:,5,0])
+        print(str(perc*100) + "%")
+        force_p.append([perc, float(n)])
 
         # ax.set_xlabel("Froude Number")
         # ax.set_zlabel("Distance")
@@ -342,12 +348,40 @@ def plot_big2():
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1])*2, color='green')
         # ax.legend()
     plt.show()
+    fig, ax = plt.subplots()
+    for n in force_p:
+        ax.plot(n[0]*100, n[1])
+    plt.show()
 
-    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13"]
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
     fig, ax = plt.subplots()
     for n in leg:
         # for j in values:
         val = parse_big2("*", "*", n, "*")
+
+        phase_difference = ((1/500)/float(n)*2)
+        period = val[:,6,0]
+        period2 = period/phase_difference
+        cost_per_distance = val[:,5,0]/val[:,4,0]
+        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
+        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+
+        # ax.set_xlabel("Froude Number")
+        # ax.set_zlabel("Distance")
+        # ax.set_ylabel("Cost Of Locomotion")
+        # ax.scatter(val[:,3,0],  float(j), float(n))
+        plt.title("Average Froude Number against Leg Rotation")
+        ax.set_xlabel("Leg Rotation")
+        ax.set_ylabel("Average Froude Number")
+        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='red')
+        # ax.legend()
+    plt.show()
+    fig, ax = plt.subplots()
+    hip=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
+
+    for n in hip:
+        # for j in values:
+        val = parse_big2("*", "*", "*", n)
 
         phase_difference = ((1/500)/float(n)*2)
         period = val[:,6,0]
