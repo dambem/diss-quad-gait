@@ -299,8 +299,8 @@ def plot_big2():
     for n in forces:
         val = parse_big2(n, "*", "*", "*")
         cost_per_distance = val[:,5,0]/val[:,4,0]
-        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
-        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+        cost_per_distance = np.clip(cost_per_distance, 0, 1500)
+        # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
         distance = val[:,4,0]
         arrayvalues = np.where(cost_per_distance > 0)
         # for j in arrayvalues[0]:
@@ -337,7 +337,7 @@ def plot_big2():
         # ax.legend()
     plt.show()
 
-    leg=["05", "06", "07", "08", "09", "10"]
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13"]
     fig, ax = plt.subplots()
     for n in leg:
         # for j in values:
