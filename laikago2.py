@@ -28,7 +28,7 @@ van_multi = 0.1
 
 mu = 1
 p_v = 2
-num_iterations = 11000
+num_iterations = 25000
 num_epochs = 10
 e_b = 999
 # Hip Configurations (SET, DO NOT CHANGE)start_x_foot
@@ -82,8 +82,8 @@ for e in range(num_epochs):
     urdfFlags = p.URDF_USE_SELF_COLLISION+p.URDF_USE_SELF_COLLISION_EXCLUDE_ALL_PARENTS
 
     debug = False;
-    cube = p.loadURDF("cube.urdf", [0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
-    cube2 = p.loadURDF("cube.urdf", [-0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
+    # cube = p.loadURDF("cube.urdf", [0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
+    # cube2 = p.loadURDF("cube.urdf", [-0.31,0,0.36],[0,5,0, 0], flags = urdfFlags, useFixedBase=True)
     quadruped = p.loadURDF("laikago/laikago.urdf",[0,0,0.5],[0,0.5,0.5,0], flags = urdfFlags,useFixedBase=False)
     base_dynamics_info = p.getDynamicsInfo(quadruped, -1)
     frh_dynamics_info = p.getDynamicsInfo(quadruped, front_right_hip)

@@ -218,7 +218,7 @@ def plot_big():
     ax.scatter(data[0],  cost_per_distance,data[1], c=data[2])
     plt.show()
 def parse_big2(force, osc, l, h):
-    filenames = sorted(glob.glob('big/f'+force+'o'+osc+'g0l'+l+"h"+h))
+    filenames = sorted(glob.glob('big/f'+force+'o'+osc+'g0l'+l+"h"+h+"log.txt"))
     # print(len(filenames))
     values = np.zeros((len(filenames), 7, 3))
     # print(np.shape(values))
@@ -332,21 +332,21 @@ def plot_big2():
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.set_xlabel("Froude Number")
-    ax.set_zlabel("Oscillator Time Step")
-    ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
+    ax.set_zlabel("Max Force")
+    # ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
     ax.set_ylabel("Hip Rotation (Degrees)")
-    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13"]
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]
     markers = ["D", "x", "o", "s", "*", "h", "v", "1", "2", "3"]
     for l in leg:
         for g in range(len(values)):
             for n in forces:
-                val = parse_big2(n, values[g], l, "*")
+                val = parse_big2(n, values[g], l, "10")
                 cost_per_distance = val[:,5,0]/val[:,4,0]
 
                 cost_per_distance = np.clip(cost_per_distance, 0, 1500)
                 # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
                 distance = val[:,4,0]
-                arrayvalues = np.where(cost_per_distance > 0)
+                # arrayvalues = np.where(cost_per_distance > 0)
                 # for j in arrayvalues[0]:
                 data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
                 froude = val[:,3,0]/(0.3)
@@ -357,8 +357,8 @@ def plot_big2():
                 # for j in run_indices:
                 #     # print((len(froude_ind[0])/len(valid_runs[0]))*100)
                 #     # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
-                ax.scatter(froude,  float(l), float(values[g]), label=n)
-        ax.legend(forces, title="Max Force")
+                ax.plot_surface(float(l), float(n), froude)
+        # ax.legend(values, title="Oscillations")
     plt.show()
 
     fig, ax = plt.subplots()
