@@ -353,6 +353,13 @@ def plot_big2():
         ax.plot(n[0]*100, n[1])
     plt.show()
 
+    val = parse_big2("*","*", "*", "*")
+    print("Overall %")
+    froude = val[:,3,0]/(0.3)
+    froude_ind = np.where(np.logical_and(froude<=0.4, froude>=0.01))
+    perc = len(froude_ind[0])/len(val[:,5,0])
+    print(str(perc*100) + "%")
+
     leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
     fig, ax = plt.subplots()
     for n in leg:
