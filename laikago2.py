@@ -50,7 +50,7 @@ hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
 shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
 
 end_period = 0
-p.connect(p.DIRECT)
+p.connect(p.GUI)
 position_array = np.zeros((num_epochs, 3, num_iterations))
 time_array = np.zeros((num_epochs, num_iterations))
 # displacement_array = np.zeros(num_iterations)
@@ -362,34 +362,34 @@ for n in range(num_epochs):
     period_average[n] = np.mean(period_foot[n,:])
 
 
-mean_velocity = np.mean(velocity)
-std_velocity = np.std(velocity)
-mean_froude = np.mean(froude_number)
-std_froude = np.std(froude_number)
-mean_force = np.mean(force_values)
-std_force = np.std(force_values)
-mean_time = np.mean(final_time)
-std_time = np.std(final_time)
-mean_distance =  np.mean(distance_val)
-std_distance = np.std(distance_val)
-mean_cost = np.mean(cost_transport)
-std_cost = np.std(cost_transport)
-mean_period = np.mean(period_average)
-std_period = np.std(period_average)
-run_name = sys.argv[4]+"/f"+sys.argv[1]+"o"+sys.argv[2]+"g"+sys.argv[3]+"l"+sys.argv[4]+"h"+sys.argv[5]
-run_log = open(run_name+"log.txt", "w+")
-saved_calc = [[mean_velocity, std_velocity], [mean_froude, std_froude], [mean_distance, std_distance], [mean_cost, std_cost], [mean_period, std_period]]
-string = "Oscillator Step: " + str(oscillator_step) + "\n"
-string += "Max Force: " + str(max_force) + "\n"
-string += "Gait: " + sys.argv[3] + "\n"
-string += "Leg Rotation: " + str(foot_angle) + "\n"
-string += "Hip Rotation: " + str(hip_angle) + "\n"
-string += ""
-run_log.write(string)
-for item in saved_calc:
-    string = str(item[0])+":"+str(item[1])+"\n"
-    run_log.write(string)
-run_log.close()
+# mean_velocity = np.mean(velocity)
+# std_velocity = np.std(velocity)
+# mean_froude = np.mean(froude_number)
+# std_froude = np.std(froude_number)
+# mean_force = np.mean(force_values)
+# std_force = np.std(force_values)
+# mean_time = np.mean(final_time)
+# std_time = np.std(final_time)
+# mean_distance =  np.mean(distance_val)
+# std_distance = np.std(distance_val)
+# mean_cost = np.mean(cost_transport)
+# std_cost = np.std(cost_transport)
+# mean_period = np.mean(period_average)
+# std_period = np.std(period_average)
+# run_name = sys.argv[4]+"/f"+sys.argv[1]+"o"+sys.argv[2]+"g"+sys.argv[3]+"l"+sys.argv[4]+"h"+sys.argv[5]
+# run_log = open(run_name+"log.txt", "w+")
+# saved_calc = [[mean_velocity, std_velocity], [mean_froude, std_froude], [mean_distance, std_distance], [mean_cost, std_cost], [mean_period, std_period]]
+# string = "Oscillator Step: " + str(oscillator_step) + "\n"
+# string += "Max Force: " + str(max_force) + "\n"
+# string += "Gait: " + sys.argv[3] + "\n"
+# string += "Leg Rotation: " + str(foot_angle) + "\n"
+# string += "Hip Rotation: " + str(hip_angle) + "\n"
+# string += ""
+# run_log.write(string)
+# for item in saved_calc:
+#     string = str(item[0])+":"+str(item[1])+"\n"
+#     run_log.write(string)
+# run_log.close()
 
 # plot = "physics2"
 if plot == "map":

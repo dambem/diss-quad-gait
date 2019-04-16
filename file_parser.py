@@ -251,7 +251,15 @@ def parse_big2(force, osc, l, h):
                 values[val, line_c, 2] = force_val
                 line_c += 1
             val += 1
+            # values[val, line_c, 0] = hip_rot
+            # values[val, line_c, 1] = leg_rot
     return(values)
+
+def big_calc():
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+    forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100"]
+    leg = ["10", "11", "12", "13", "14", "15", "16", "17",  "18", "19", "20"]
+    hip =  ["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
 def plot_big2():
     # 2 = velocity
     # 3 = froude
@@ -320,6 +328,39 @@ def plot_big2():
             ax.scatter(froude,  cost_per_distance, float(values[g]), label=n)
     ax.legend(forces, title="Max Force")
     plt.show()
+
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+    ax.set_xlabel("Froude Number")
+    ax.set_zlabel("Oscillator Time Step")
+    ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
+    ax.set_ylabel("Hip Rotation (Degrees)")
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13"]
+    markers = ["D", "x", "o", "s", "*", "h", "v", "1", "2", "3"]
+    for l in leg:
+        for g in range(len(values)):
+            for n in forces:
+                val = parse_big2(n, values[g], l, "*")
+                cost_per_distance = val[:,5,0]/val[:,4,0]
+
+                cost_per_distance = np.clip(cost_per_distance, 0, 1500)
+                # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+                distance = val[:,4,0]
+                arrayvalues = np.where(cost_per_distance > 0)
+                # for j in arrayvalues[0]:
+                data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
+                froude = val[:,3,0]/(0.3)
+                froude_ind = np.where(np.logical_and(froude<=0.3, froude>=0.1))
+                # valid_run = np.where(froude  0)
+                # run_indices = valid_run[0]
+                average_cost = np.mean(cost_per_distance)
+                # for j in run_indices:
+                #     # print((len(froude_ind[0])/len(valid_runs[0]))*100)
+                #     # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
+                ax.scatter(froude,  float(l), float(values[g]), label=n)
+        ax.legend(forces, title="Max Force")
+    plt.show()
+
     fig, ax = plt.subplots()
     force_p = []
     for n in forces:
@@ -349,16 +390,31 @@ def plot_big2():
         # ax.legend()
     plt.show()
     fig, ax = plt.subplots()
-    for n in force_p:
-        ax.plot(n[0]*100, n[1])
-    plt.show()
+    # for n in force_p:
+    #     ax.plot(n[0]*100, n[1])
+    # plt.show()
 
     val = parse_big2("*","*", "*", "*")
+    distance = val[:,4,0]
+    # print(distance)
+    print
+    valid_dist = np.where(distance >= 0.5)
+    print(len(valid_dist[0]))
+    print(len(val[:,4,0]))
+
     print("Overall %")
     froude = val[:,3,0]/(0.3)
-    froude_ind = np.where(np.logical_and(froude<=0.4, froude>=0.01))
+    # print(np.where(froude >= 0.01))
+    froude_ind = np.where(np.logical_and(froude<=0.4, froude != 0))
+    # froude_zeros = np.where(froude==0)
+    # zero = str(len(froude_zeros)) + "%"
+    # print(zero)
     perc = len(froude_ind[0])/len(val[:,5,0])
     print(str(perc*100) + "%")
+
+    for n in values:
+        val = parse_big2("*", n, "*", "*")
+        froude = val[:,3,0]/(0.3)
 
     leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
     fig, ax = plt.subplots()
