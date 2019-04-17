@@ -305,7 +305,7 @@ def plot_big2():
     ax.set_zlabel("Oscillator Time Step")
     ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
     ax.set_ylabel("Cost Of Locomotion Per Unit Distance")
-    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13"]
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "15", "16", "17","18"]
     markers = ["D", "x", "o", "s", "*", "h", "v", "1", "2", "3"]
     for g in range(len(values)):
         for n in forces:
@@ -335,14 +335,13 @@ def plot_big2():
     ax.set_zlabel("Max Force")
     # ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
     ax.set_ylabel("Hip Rotation (Degrees)")
-    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16"]
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
     markers = ["D", "x", "o", "s", "*", "h", "v", "1", "2", "3"]
     for l in leg:
         for g in range(len(values)):
             for n in forces:
                 val = parse_big2(n, values[g], l, "10")
                 cost_per_distance = val[:,5,0]/val[:,4,0]
-
                 cost_per_distance = np.clip(cost_per_distance, 0, 1500)
                 # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
                 distance = val[:,4,0]
@@ -353,11 +352,12 @@ def plot_big2():
                 froude_ind = np.where(np.logical_and(froude<=0.3, froude>=0.1))
                 # valid_run = np.where(froude  0)
                 # run_indices = valid_run[0]
+                # for n in range()
                 average_cost = np.mean(cost_per_distance)
                 # for j in run_indices:
                 #     # print((len(froude_ind[0])/len(valid_runs[0]))*100)
                 #     # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
-                ax.plot_surface(float(l), float(n), froude)
+                ax.scatter(float(l), float(n), froude)
         # ax.legend(values, title="Oscillations")
     plt.show()
 
@@ -416,7 +416,7 @@ def plot_big2():
         val = parse_big2("*", n, "*", "*")
         froude = val[:,3,0]/(0.3)
 
-    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
+    leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18"]
     fig, ax = plt.subplots()
     for n in leg:
         # for j in values:

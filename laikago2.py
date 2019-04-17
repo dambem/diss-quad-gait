@@ -28,8 +28,8 @@ van_multi = 0.1
 
 mu = 1
 p_v = 2
-num_iterations = 25000
-num_epochs = 10
+num_iterations = 5000
+num_epochs = 1
 e_b = 999
 # Hip Configurations (SET, DO NOT CHANGE)start_x_foot
 front_right_hip = 1
@@ -276,6 +276,7 @@ for e in range(num_epochs):
             # sample_timer = 0
 
             # sample_timer += time_step
+            # p.addUserDebugLine((pos_ori[0][0], pos_ori[0][1], pos_ori[0][2]), (pos_ori[0][0]+0.1, pos_ori[0][1], pos_ori[0][2]))
 
 
             # feedback = [fr_foot_rot, br_foot_rot, fl_foot_rot, bl_foot_rot]
@@ -343,7 +344,7 @@ for e in range(num_epochs):
 
 
 # EXPERIMENT DESIGN
-plot = ""
+plot = "osc_hip"
 final_time = np.zeros(num_epochs)
 distance_val = np.zeros(num_epochs)
 velocity = np.zeros(num_epochs)
@@ -392,14 +393,14 @@ for n in range(num_epochs):
 # run_log.close()
 
 # plot = "physics2"
-if plot == "map":
-
-    plt.figure(figsize=(20,20))
-    plt.title("Path Of Robot Over Time")
-    plt.xlabel("X Direction")
-    plt.ylabel("Y Direction")
-    plt.plot(y_values, x_values)
-    plt.show()
+# if plot == "map":
+#
+#     plt.figure(figsize=(20,20))
+#     plt.title("Path Of Robot Over Time")
+#     plt.xlabel("X Direction")
+#     plt.ylabel("Y Direction")
+#     plt.plot(y_values, x_values)
+#     plt.show()
 
 if plot == "stride":
     plt.figure(figsize=(20,20))
@@ -410,10 +411,10 @@ if plot == "osc_hip":
     foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
     hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
     plt.title("Foot Imaginary Coupled Oscillator")
-    plt1, =plt.plot(time_array, oscillator_values[0])
-    plt2, =plt.plot(time_array, oscillator_values[1])
-    plt3, =plt.plot(time_array, oscillator_values[2])
-    plt4, =plt.plot(time_array, oscillator_values[3])
+    plt1, =plt.plot(time_array[0], oscillator_values[0])
+    plt2, =plt.plot(time_array[0], oscillator_values[1])
+    plt3, =plt.plot(time_array[0], oscillator_values[2])
+    plt4, =plt.plot(time_array[0], oscillator_values[3])
     plt.legend([plt1, plt2, plt3, plt4], foot_labels)
 
     fig, ax = plt.subplots()
@@ -439,6 +440,9 @@ if plot == "oscillators":
     hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
     plt.subplot(3,2,1)
     plt.title("Foot Imaginary Coupled Oscillator")
+    # plt.title("Hip Imaginary Coupled Oscillator")
+    plt.xlabel("Time Step (t)")
+    plt.ylabel("Oscillator Output")
     plt1, =plt.plot(time_array, oscillator_values[0])
     plt2, =plt.plot(time_array, oscillator_values[1])
     plt3, =plt.plot(time_array, oscillator_values[2])
