@@ -28,9 +28,9 @@ van_multi = 0.1
 
 mu = 1
 p_v = 2
-num_iterations = 5000
+num_iterations = 4000
 num_epochs = 1
-e_b = 999
+e_b = 1999
 # Hip Configurations (SET, DO NOT CHANGE)start_x_foot
 front_right_hip = 1
 front_left_hip = 4
@@ -50,7 +50,7 @@ hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
 shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
 
 end_period = 0
-p.connect(p.GUI)
+p.connect(p.DIRECT)
 position_array = np.zeros((num_epochs, 3, num_iterations))
 time_array = np.zeros((num_epochs, num_iterations))
 # displacement_array = np.zeros(num_iterations)
@@ -61,7 +61,7 @@ tilt_array = np.zeros((num_epochs, 3, num_iterations))
 height_array = np.zeros((num_epochs,num_iterations))
 turn_array = np.zeros((num_epochs, num_iterations))
 for e in range(num_epochs):
-    print(str(e/num_epochs*100)+ "%")
+    # print(str(e/num_epochs*100)+ "%")
     # Oscillator Values, Initiated at 1
     start_y_foot = [2,2,2,2]
     start_x_foot = [0,0,0,0]
@@ -201,10 +201,10 @@ for e in range(num_epochs):
     run_string= max_force  + foot_angle + hip_angle
 
 
-    oscillator_values = [[],[],[],[]]
-    oscillator_values2 = [[],[],[],[]]
+    oscillator_values = np.zeros((4,num_iterations))
+    oscillator_values2 =  np.zeros((4,num_iterations))
     # force_array= []
-    limb_values = [[],[],[],[], [], [], [], []]
+    limb_values = np.zeros((8,num_iterations))
     starting_foot_value = 0
     # velocity_array = []
     total_displacement = 0
@@ -302,18 +302,18 @@ for e in range(num_epochs):
                 new_y_hip[i] = y2
                 new_x_hip[i] = x2
 
-            if (len(oscillator_values[0]) >= 3):
-                nl = counter-1
-                current = oscillator_values[0][nl] - oscillator_values[0][nl-1]
-                previous = oscillator_values[0][nl-1] - oscillator_values[0][nl-2]
-                if(current >= 0 and previous <= 0):
-                    found += 1
-                    if (found == 1):
-                        start_period = timer
-                    if (found == 2):
-                        end_period = timer
-                        found = 0
-                        period_foot[e,n] = end_period-start_period
+            # if (len(oscillator_values[0]) >= 3):
+            #     nl = counter-1
+            #     current = oscillator_values[0][nl] - oscillator_values[0][nl-1]
+            #     previous = oscillator_values[0][nl-1] - oscillator_values[0][nl-2]
+            #     if(current >= 0 and previous <= 0):
+            #         found += 1
+            #         if (found == 1):
+            #             start_period = timer
+            #         if (found == 2):
+            #             end_period = timer
+            #             found = 0
+            #             period_foot[e,n] = end_period-start_period
 
 
 
@@ -326,25 +326,26 @@ for e in range(num_epochs):
             start_x_hip = new_x_hip
 
 
-            for n in range(4):
-                oscillator_values[n].append(x_list_foot[n])
-                oscillator_values2[n].append(x_list_hip[n])
+            for i in range(4):
+                oscillator_values[i,n] =(x_list_foot[i])
+                oscillator_values2[i,n] =(x_list_hip[i])
             for i, v in enumerate(feet):
                 realval = p.getJointState(quadruped, v)[0]
-                limb_values[i].append(realval)
+                limb_values[i,n] = (realval)
                 p.setJointMotorControl2(quadruped, v,p.POSITION_CONTROL,-jointOffsets[v]+(foot_angle*x_list_foot[i]*van_multi), force=max_force)
             for i, v in enumerate(hips):
                 realval = p.getJointState(quadruped, v)[0]
-                limb_values[i+4].append(realval)
+                limb_values[i+4,n] =(realval)
                 p.setJointMotorControl2(quadruped, v,p.POSITION_CONTROL, -jointOffsets[v]+(hip_angle*x_list_hip[i]*van_multi), force=max_force)
             for i, v in enumerate(shoulders):
                 p.setJointMotorControl2(quadruped, v,p.POSITION_CONTROL,  0, force=max_force)
             p.stepSimulation()
-    p.resetSimulation()
+    # p.resetSimulation()
+# p.disconnect(p.GUI)
 
 
 # EXPERIMENT DESIGN
-plot = "osc_hip"
+plot = "oscillators"
 final_time = np.zeros(num_epochs)
 distance_val = np.zeros(num_epochs)
 velocity = np.zeros(num_epochs)
@@ -411,10 +412,10 @@ if plot == "osc_hip":
     foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
     hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
     plt.title("Foot Imaginary Coupled Oscillator")
-    plt1, =plt.plot(time_array[0], oscillator_values[0])
-    plt2, =plt.plot(time_array[0], oscillator_values[1])
-    plt3, =plt.plot(time_array[0], oscillator_values[2])
-    plt4, =plt.plot(time_array[0], oscillator_values[3])
+    plt1, =plt.plot(time_array[0,1000:], oscillator_values[0,1000:])
+    plt2, =plt.plot(time_array[0,1000:], oscillator_values[1,1000:])
+    plt3, =plt.plot(time_array[0,1000:], oscillator_values[2,1000:])
+    plt4, =plt.plot(time_array[0,1000:], oscillator_values[3,1000:])
     plt.legend([plt1, plt2, plt3, plt4], foot_labels)
 
     fig, ax = plt.subplots()
@@ -438,57 +439,57 @@ if plot == "oscillators":
     plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
     foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
     hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
-    plt.subplot(3,2,1)
-    plt.title("Foot Imaginary Coupled Oscillator")
+    plt.subplot(1,1,1)
+    # plt.title("Foot Imaginary Coupled Oscillator")
     # plt.title("Hip Imaginary Coupled Oscillator")
     plt.xlabel("Time Step (t)")
     plt.ylabel("Oscillator Output")
-    plt1, =plt.plot(time_array, oscillator_values[0])
-    plt2, =plt.plot(time_array, oscillator_values[1])
-    plt3, =plt.plot(time_array, oscillator_values[2])
-    plt4, =plt.plot(time_array, oscillator_values[3])
-    plt.legend([plt1, plt2, plt3, plt4], foot_labels)
+    plt1, =plt.plot(time_array[0,e_b:], oscillator_values[0,e_b:])
+    plt2, =plt.plot(time_array[0,e_b:], oscillator_values[1,e_b:])
+    plt3, =plt.plot(time_array[0,e_b:], oscillator_values[2,e_b:])
+    plt4, =plt.plot(time_array[0,e_b:], oscillator_values[3,e_b:])
+    # plt.legend([plt1, plt2, plt3, plt4], foot_labels)
 
-    plt.subplot(3,2,2)
-    plt.title("Foot Actual Limb Rotation Values")
+    # plt.subplot(2,2,2)
+    plt.title("Foot Oscillator Values (Imaginary and Real Transposed by +0.5 and Scaled by +60)")
+    # plt.subtitle("(Real Oscillator Values transposed by +0.5 and scaled by 60 to allow for direct comparisons)")
+    plt5,= plt.plot(time_array[0,e_b:], (limb_values[0,e_b:]+0.5)*60)
+    plt6,= plt.plot(time_array[0,e_b:], (limb_values[1,e_b:]+0.5)*60)
+    plt7, =plt.plot(time_array[0,e_b:], (limb_values[2,e_b:]+0.5)*60)
+    plt8, =plt.plot(time_array[0,e_b:], (limb_values[3,e_b:]+0.5)*60)
+    plt.legend([plt1, plt2, plt3, plt4,plt5,plt6,plt7,plt8], ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot Real","Front Right Foot Real", "Back Right Foot Real", "Front Left Foot Real", "Back Left Foot Real"])
 
-    plt1,= plt.plot(time_array, limb_values[0])
-    plt2,= plt.plot(time_array, limb_values[1])
-    plt3, =plt.plot(time_array, limb_values[2])
-    plt4, =plt.plot(time_array, limb_values[3])
-    plt.legend([plt1, plt2, plt3, plt4], ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"])
-
-
-    plt.subplot(3,2,3)
-    plt.title("Hip Imaginary Coupled Oscillator")
-    plt.xlabel("Time Step (t)")
-    plt.ylabel("X Value")
-    plt1,= plt.plot(time_array, oscillator_values2[0])
-    plt2,= plt.plot(time_array, oscillator_values2[1])
-    plt3,= plt.plot(time_array, oscillator_values2[2])
-    plt4,=plt.plot(time_array, oscillator_values2[3])
-    plt.legend([plt1, plt2, plt3, plt4], hip_labels)
-
-
-    plt.subplot(3,2,4)
-    plt.title("Hip Actual Limb Rotation Values")
-    plt1,=plt.plot(time_array, limb_values[4])
-    plt2,=plt.plot(time_array, limb_values[5])
-    plt3,=plt.plot(time_array, limb_values[6])
-    plt4,=plt.plot(time_array, limb_values[7])
-    plt.legend([plt1, plt2, plt3, plt4], ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"])
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(lamb, cmap='tab20b')
-    plt.title("Coupled Oscillator Coefficients: Walking")
-    ax.set_xticks(np.arange(len(foot_labels)))
-    ax.set_yticks(np.arange(len(foot_labels)))
-    ax.set_xticklabels(foot_labels)
-    ax.set_yticklabels(foot_labels)
-    for i in range(4):
-        for j in range(4):
-            text = ax.text(j, i, lamb[i][j],
-                           ha="center", va="center", size=20, color="w")
+    #
+    # plt.subplot(2,2,3)
+    # plt.title("Hip Imaginary Coupled Oscillator")
+    # plt.xlabel("Time Step (t)")
+    # plt.ylabel("X Value")
+    # plt1,= plt.plot(time_array[0], oscillator_values2[0])
+    # plt2,= plt.plot(time_array[0], oscillator_values2[1])
+    # plt3,= plt.plot(time_array[0], oscillator_values2[2])
+    # plt4,=plt.plot(time_array[0], oscillator_values2[3])
+    # plt.legend([plt1, plt2, plt3, plt4], hip_labels)
+    #
+    #
+    # plt.subplot(2,2,4)
+    # plt.title("Hip Actual Limb Rotation Values")
+    # plt1,=plt.plot(time_array[0], limb_values[4])
+    # plt2,=plt.plot(time_array[0], limb_values[5])
+    # plt3,=plt.plot(time_array[0], limb_values[6])
+    # plt4,=plt.plot(time_array[0], limb_values[7])
+    # plt.legend([plt1, plt2, plt3, plt4], ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"])
+    #
+    # fig, ax = plt.subplots()
+    # im = ax.imshow(lamb, cmap='tab20b')
+    # plt.title("Coupled Oscillator Coefficients: Walking")
+    # ax.set_xticks(np.arange(len(foot_labels)))
+    # ax.set_yticks(np.arange(len(foot_labels)))
+    # ax.set_xticklabels(foot_labels)
+    # ax.set_yticklabels(foot_labels)
+    # for i in range(4):
+    #     for j in range(4):
+    #         text = ax.text(j, i, lamb[i][j],
+    #                        ha="center", va="center", size=20, color="w")
 
     # cbar = ax.figure.colorbar(lamb, ax=ax)
     # cbar.ax.set_ylabel("Correlation", rotation=-90, va="bottom")
