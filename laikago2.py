@@ -3,6 +3,7 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 import datetime
+import scipy.stats as sp
 from scipy.integrate import odeint
 import scipy.signal as signal
 import sys
@@ -28,9 +29,9 @@ van_multi = 0.1
 
 mu = 1
 p_v = 2
-num_iterations = 4000
+num_iterations = 11000
 num_epochs = 1
-e_b = 1999
+e_b = 999
 # Hip Configurations (SET, DO NOT CHANGE)start_x_foot
 front_right_hip = 1
 front_left_hip = 4
@@ -353,6 +354,27 @@ froude_number = np.zeros(num_epochs)
 force_values = np.zeros(num_epochs)
 cost_transport = np.zeros(num_epochs)
 period_average = np.zeros(num_epochs)
+virtual_foot = oscillator_values[0,e_b:]
+virtual_foot2 = oscillator_values[1,e_b:]
+virtual_foot3 = oscillator_values[2,e_b:]
+virtual_foot4 = oscillator_values[3,e_b:]
+
+realval_foot = (limb_values[0,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
+realval_foot2 = (limb_values[1,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
+realval_foot3 = (limb_values[2,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
+realval_foot4 = (limb_values[3,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
+
+# realval_hip = (limb_values[0,e_b:]+0.5)*(1/foot_angle)*10
+ttest =  sp.ttest_rel(realval_foot, virtual_foot)
+ttest2 =  sp.ttest_rel(realval_foot2, virtual_foot2)
+ttest3 =  sp.ttest_rel(realval_foot3, virtual_foot3)
+ttest4 =  sp.ttest_rel(realval_foot4, virtual_foot4)
+
+print(ttest)
+print(ttest2)
+print(ttest3)
+print(ttest4)
+
 for n in range(num_epochs):
     final_time[n] = time_array[n, -1] - time_array[n, e_b]
     distance_val[n] = distance_array[n, -1] - distance_array[n, e_b]
@@ -444,20 +466,28 @@ if plot == "oscillators":
     # plt.title("Hip Imaginary Coupled Oscillator")
     plt.xlabel("Time Step (t)")
     plt.ylabel("Oscillator Output")
-    plt1, =plt.plot(time_array[0,e_b:], oscillator_values[0,e_b:])
-    plt2, =plt.plot(time_array[0,e_b:], oscillator_values[1,e_b:])
-    plt3, =plt.plot(time_array[0,e_b:], oscillator_values[2,e_b:])
-    plt4, =plt.plot(time_array[0,e_b:], oscillator_values[3,e_b:])
+    plt1, =plt.plot(time_array[0,e_b:], virtual_foot)
+    plt2, =plt.plot(time_array[0,e_b:], virtual_foot2)
+    plt3, =plt.plot(time_array[0,e_b:], virtual_foot3)
+    plt4, =plt.plot(time_array[0,e_b:], virtual_foot4)
+
+    # plt2, =plt.plot(time_array[0,e_b:], oscillator_values[1,e_b:])
+    # plt3, =plt.plot(time_array[0,e_b:], oscillator_values[2,e_b:])
+    # plt4, =plt.plot(time_array[0,e_b:], oscillator_values[3,e_b:])
     # plt.legend([plt1, plt2, plt3, plt4], foot_labels)
 
     # plt.subplot(2,2,2)
     plt.title("Foot Oscillator Values (Imaginary and Real Transposed by +0.5 and Scaled by +60)")
     # plt.subtitle("(Real Oscillator Values transposed by +0.5 and scaled by 60 to allow for direct comparisons)")
-    plt5,= plt.plot(time_array[0,e_b:], (limb_values[0,e_b:]+0.5)*60)
-    plt6,= plt.plot(time_array[0,e_b:], (limb_values[1,e_b:]+0.5)*60)
-    plt7, =plt.plot(time_array[0,e_b:], (limb_values[2,e_b:]+0.5)*60)
-    plt8, =plt.plot(time_array[0,e_b:], (limb_values[3,e_b:]+0.5)*60)
-    plt.legend([plt1, plt2, plt3, plt4,plt5,plt6,plt7,plt8], ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot Real","Front Right Foot Real", "Back Right Foot Real", "Front Left Foot Real", "Back Left Foot Real"])
+    plt5,= plt.plot(time_array[0,e_b:], realval_foot)
+    plt6,= plt.plot(time_array[0,e_b:], realval_foot2)
+    plt7,= plt.plot(time_array[0,e_b:], realval_foot3)
+    plt8,= plt.plot(time_array[0,e_b:], realval_foot4)
+
+    # plt7, =plt.plot(time_array[0,e_b+1:], (limb_values[2,e_b+1:]+0.5)*60)
+    # plt8, =plt.plot(time_array[0,e_b+1:], (limb_values[3,e_b+1:]+0.5)*60)
+
+    # plt.legend([plt1,plt5], ["Front Right Foot", "Front Right Foot Real"])
 
     #
     # plt.subplot(2,2,3)
