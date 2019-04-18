@@ -359,10 +359,20 @@ virtual_foot2 = oscillator_values[1,e_b:]
 virtual_foot3 = oscillator_values[2,e_b:]
 virtual_foot4 = oscillator_values[3,e_b:]
 
+virtual_hip = oscillator_values2[0,e_b:]
+virtual_hip2 = oscillator_values2[1,e_b:]
+virtual_hip3 = oscillator_values2[2,e_b:]
+virtual_hip4 = oscillator_values2[3,e_b:]
+
 realval_foot = (limb_values[0,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
 realval_foot2 = (limb_values[1,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
 realval_foot3 = (limb_values[2,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
 realval_foot4 = (limb_values[3,e_b:]+0.5)*(1/foot_angle)*(1/van_multi)
+
+realval_hip = (limb_values[4,e_b:]+0.2)*(1/hip_angle)*(1/van_multi)
+realval_hip2 = (limb_values[5,e_b:])*(1/hip_angle)*(1/van_multi)
+realval_hip3 = (limb_values[6,e_b:]+0.2)*(1/hip_angle)*(1/van_multi)
+realval_hip4 = (limb_values[7,e_b:])*(1/hip_angle)*(1/van_multi)
 
 # realval_hip = (limb_values[0,e_b:]+0.5)*(1/foot_angle)*10
 ttest =  sp.ttest_rel(realval_foot, virtual_foot)
@@ -370,11 +380,22 @@ ttest2 =  sp.ttest_rel(realval_foot2, virtual_foot2)
 ttest3 =  sp.ttest_rel(realval_foot3, virtual_foot3)
 ttest4 =  sp.ttest_rel(realval_foot4, virtual_foot4)
 
-print(ttest)
-print(ttest2)
-print(ttest3)
-print(ttest4)
+ttest5 =  sp.ttest_rel(realval_hip, virtual_hip)
+ttest6 =  sp.ttest_rel(realval_hip2, virtual_hip2)
+ttest7 =  sp.ttest_rel(realval_hip3, virtual_hip3)
+ttest8 =  sp.ttest_rel(realval_hip4, virtual_hip4)
 
+pavg_foot = (ttest[1]+ttest2[1]+ttest3[1]+ttest4[1])/4
+tavg_foot = (ttest[0]+ttest2[0]+ttest3[0]+ttest4[0])/4
+
+pavg_hip = (ttest5[1]+ttest6[1]+ttest7[1]+ttest8[1])/4
+tavg_hip = (ttest5[0]+ttest6[0]+ttest7[0]+ttest8[0])/4
+
+print(tavg_foot)
+print(pavg_foot)
+
+print(tavg_hip)
+print(pavg_hip)
 for n in range(num_epochs):
     final_time[n] = time_array[n, -1] - time_array[n, e_b]
     distance_val[n] = distance_array[n, -1] - distance_array[n, e_b]
@@ -386,44 +407,49 @@ for n in range(num_epochs):
     period_average[n] = np.mean(period_foot[n,:])
 
 
-# mean_velocity = np.mean(velocity)
-# std_velocity = np.std(velocity)
-# mean_froude = np.mean(froude_number)
-# std_froude = np.std(froude_number)
-# mean_force = np.mean(force_values)
-# std_force = np.std(force_values)
-# mean_time = np.mean(final_time)
-# std_time = np.std(final_time)
-# mean_distance =  np.mean(distance_val)
-# std_distance = np.std(distance_val)
-# mean_cost = np.mean(cost_transport)
-# std_cost = np.std(cost_transport)
-# mean_period = np.mean(period_average)
-# std_period = np.std(period_average)
-# run_name = sys.argv[4]+"/f"+sys.argv[1]+"o"+sys.argv[2]+"g"+sys.argv[3]+"l"+sys.argv[4]+"h"+sys.argv[5]
-# run_log = open(run_name+"log.txt", "w+")
-# saved_calc = [[mean_velocity, std_velocity], [mean_froude, std_froude], [mean_distance, std_distance], [mean_cost, std_cost], [mean_period, std_period]]
-# string = "Oscillator Step: " + str(oscillator_step) + "\n"
-# string += "Max Force: " + str(max_force) + "\n"
-# string += "Gait: " + sys.argv[3] + "\n"
-# string += "Leg Rotation: " + str(foot_angle) + "\n"
-# string += "Hip Rotation: " + str(hip_angle) + "\n"
-# string += ""
-# run_log.write(string)
-# for item in saved_calc:
-#     string = str(item[0])+":"+str(item[1])+"\n"
-#     run_log.write(string)
-# run_log.close()
+mean_velocity = np.mean(velocity)
+std_velocity = np.std(velocity)
+mean_froude = np.mean(froude_number)
+std_froude = np.std(froude_number)
+mean_force = np.mean(force_values)
+std_force = np.std(force_values)
+mean_time = np.mean(final_time)
+std_time = np.std(final_time)
+mean_distance =  np.mean(distance_val)
+std_distance = np.std(distance_val)
+mean_cost = np.mean(cost_transport)
+std_cost = np.std(cost_transport)
+mean_period = np.mean(period_average)
+std_period = np.std(period_average)
+run_name = sys.argv[4]+"/f"+sys.argv[1]+"o"+sys.argv[2]+"g"+sys.argv[3]+"l"+sys.argv[4]+"h"+sys.argv[5]
+run_log = open(run_name+"log.txt", "w+")
+saved_calc = [[mean_velocity, std_velocity], [mean_froude, std_froude], [mean_distance, std_distance], [mean_cost, std_cost], [mean_period, std_period]]
+string = "Oscillator Step: " + str(oscillator_step) + "\n"
+string += "Max Force: " + str(max_force) + "\n"
+string += "Gait: " + sys.argv[3] + "\n"
+string += "Leg Rotation: " + str(foot_angle) + "\n"
+string += "Hip Rotation: " + str(hip_angle) + "\n"
+string += "P Value Leg: " + str(pavg_foot) + "\n"
+string += "P Value Hip: " + str(pavg_hip) + "\n"
+string += "T Value Leg: " + str(tavg_foot) + "\n"
+string += "T Value Hip: " + str(tavg_hip) + "\n"
+# string +=
+string += ""
+run_log.write(string)
+for item in saved_calc:
+    string = str(item[0])+":"+str(item[1])+"\n"
+    run_log.write(string)
+run_log.close()
 
-# plot = "physics2"
-# if plot == "map":
-#
-#     plt.figure(figsize=(20,20))
-#     plt.title("Path Of Robot Over Time")
-#     plt.xlabel("X Direction")
-#     plt.ylabel("Y Direction")
-#     plt.plot(y_values, x_values)
-#     plt.show()
+plot = "sfkogkdofgd"
+if plot == "map":
+
+    plt.figure(figsize=(20,20))
+    plt.title("Path Of Robot Over Time")
+    plt.xlabel("X Direction")
+    plt.ylabel("Y Direction")
+    plt.plot(y_values, x_values)
+    plt.show()
 
 if plot == "stride":
     plt.figure(figsize=(20,20))
@@ -461,7 +487,7 @@ if plot == "oscillators":
     plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
     foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
     hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
-    plt.subplot(1,1,1)
+    plt.subplot(2,1,1)
     # plt.title("Foot Imaginary Coupled Oscillator")
     # plt.title("Hip Imaginary Coupled Oscillator")
     plt.xlabel("Time Step (t)")
@@ -476,14 +502,32 @@ if plot == "oscillators":
     # plt4, =plt.plot(time_array[0,e_b:], oscillator_values[3,e_b:])
     # plt.legend([plt1, plt2, plt3, plt4], foot_labels)
 
-    # plt.subplot(2,2,2)
     plt.title("Foot Oscillator Values (Imaginary and Real Transposed by +0.5 and Scaled by +60)")
     # plt.subtitle("(Real Oscillator Values transposed by +0.5 and scaled by 60 to allow for direct comparisons)")
     plt5,= plt.plot(time_array[0,e_b:], realval_foot)
     plt6,= plt.plot(time_array[0,e_b:], realval_foot2)
     plt7,= plt.plot(time_array[0,e_b:], realval_foot3)
     plt8,= plt.plot(time_array[0,e_b:], realval_foot4)
+    plt.subplot(2,1,2)
 
+    plt.xlabel("Time Step (t)")
+    plt.ylabel("Oscillator Output")
+    plt1, =plt.plot(time_array[0,e_b:], virtual_hip)
+    plt2, =plt.plot(time_array[0,e_b:], virtual_hip2)
+    plt3, =plt.plot(time_array[0,e_b:], virtual_hip3)
+    plt4, =plt.plot(time_array[0,e_b:], virtual_hip4)
+
+    # plt2, =plt.plot(time_array[0,e_b:], oscillator_values[1,e_b:])
+    # plt3, =plt.plot(time_array[0,e_b:], oscillator_values[2,e_b:])
+    # plt4, =plt.plot(time_array[0,e_b:], oscillator_values[3,e_b:])
+    # plt.legend([plt1, plt2, plt3, plt4], foot_labels)
+
+    plt.title("Foot Oscillator Values (Imaginary and Real Transposed by +0.5 and Scaled by +60)")
+    # plt.subtitle("(Real Oscillator Values transposed by +0.5 and scaled by 60 to allow for direct comparisons)")
+    plt5,= plt.plot(time_array[0,e_b:], realval_hip)
+    plt6,= plt.plot(time_array[0,e_b:], realval_hip2)
+    plt7,= plt.plot(time_array[0,e_b:], realval_hip3)
+    plt8,= plt.plot(time_array[0,e_b:], realval_hip4)
     # plt7, =plt.plot(time_array[0,e_b+1:], (limb_values[2,e_b+1:]+0.5)*60)
     # plt8, =plt.plot(time_array[0,e_b+1:], (limb_values[3,e_b+1:]+0.5)*60)
 
