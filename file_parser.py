@@ -554,19 +554,45 @@ def plot_big2():
     lege = ["All", "020", "030", "040", "050", "060", "070", "080", "090", "100"]
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
     lege = ["All", "0.010", "0.008", "0.006", "0.004", "0.002"]
-
+    legen = "All - " + "μ: " + froudemean + "σ²: " + froudestd**2 
     ax.plot(froude, normf) # including h here is crucial
     for n in values:
-        val = parse_big2(n, "*", "*", "*")
+        val = parse_big2("*", n, "*", "*")
         froude = (val[:,3,0]/0.3)
         froude.sort()
         froudemean = np.mean(froude)
         froudestd = np.std(froude)
         normf = stats.norm.pdf(froude, froudemean, froudestd)
-        ax.plot(froude, normf) # including h here is crucial
+        ax.plot(froude, normf)
+    ax.legend(lege, title="Oscillator Values")
+
+    fig, ax = plt.subplots()
+    froude = (val[:,3,0]/0.3)
+    froude.sort()
+    froudemean = np.mean(froude)
+    froudestd = np.std(froude)
+    normf = stats.norm.pdf(froude, froudemean, froudestd)
+    plt.title("Distribution Of Froude Number Values")
+    ax.set_xlabel("Froude Number")
+    ax.set_ylabel("Probability")
+    forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100"]
+    lege = ["All", "020", "030", "040", "050", "060", "070", "080", "090", "100"]
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+    lege = ["All", "0.010", "0.008", "0.006", "0.004", "0.002"]
+
+    ax.plot(froude, normf) # including h here is crucial
+    for n in values:
+        val = parse_big2("*", n, "*", "*")
+        froude = (val[:,3,0]/0.3)
+        froude.sort()
+        froudemean = np.mean(froude)
+        froudestd = np.std(froude)
+        normf = stats.norm.pdf(froude, froudemean, froudestd)
+        ax.plot(froude, normf)
     ax.legend(lege, title="Max Force")
 
     plt.show()
+
 
     # fig, ax = plt.subplots()
     # hip=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
