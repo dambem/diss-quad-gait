@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import math
+import scipy.stats as stats
+from scipy.stats import norm
 def deg_to_rad(deg):
     return deg*(np.pi/180)
 def rad_to_deg(rad):
@@ -254,12 +256,94 @@ def parse_big2(force, osc, l, h):
             # values[val, line_c, 0] = hip_rot
             # values[val, line_c, 1] = leg_rot
     return(values)
-
+def parse_t(force, osc, l, h):
+    filenames = sorted(glob.glob('ttest/f'+force+'o'+osc+"*"))
+    # print(len(filenames))
+    values = np.zeros((len(filenames), 11, 3))
+    # print(np.shape(values))
+    val = 0
+    for f in filenames:
+        with open(f, 'r') as fp:
+            line = fp.readline()
+            line = line.split(":")
+            maxforce = fp.readline()
+            maxforce = maxforce.split(':')
+            gait = fp.readline()
+            leg_rot = fp.readline()
+            hip_rot = fp.readline()
+            leg_p = fp.readline()
+            hip_p = fp.readline()
+            leg_t = fp.readline()
+            hip_t = fp.readline()
+            pvalleg = leg_p.split(':')
+            pvalhip = hip_p.split(':')
+            tvalleg = leg_t.split(':')
+            tvalhip = hip_t.split(':')
+            leg_p_val = float(pvalleg[1])
+            leg_t_val = float(tvalleg[1])
+            hip_p_val = float(pvalhip[1])
+            hip_t_val = float(tvalhip[1])
+            line_c = 0
+            force_val = float(maxforce[1])
+            oscil_val = float(line[1])
+            values[val, line_c, 0] = force_val
+            line_c += 1
+            values[val, line_c, 0] = oscil_val
+            line_c += 1
+            values[val, line_c, 0] = leg_t_val
+            line_c += 1
+            values[val, line_c, 0] = leg_p_val
+            line_c += 1
+            values[val, line_c, 0] = hip_t_val
+            line_c += 1
+            values[val, line_c, 0] = hip_p_val
+            line_c += 1
+            while line:
+                line = fp.readline()
+                data = line.split(':')
+                if (len(data) == 1):
+                    continue;
+                val_d = float(data[0])
+                val_sd = float(data[1])
+                values[val, line_c, 0] = val_d
+                values[val, line_c, 1] = val_sd
+                values[val, line_c, 2] = force_val
+                line_c += 1
+            val += 1
+            # values[val, line_c, 0] = hip_rot
+            # values[val, line_c, 1] = leg_rot
+    return(values)
 def big_calc():
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
     forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100"]
     leg = ["10", "11", "12", "13", "14", "15", "16", "17",  "18", "19", "20"]
     hip =  ["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
+
+def plot_t():
+    # 2 = leg t
+    # 3 = leg p
+    # 4 = hip t
+    # 5 = hip p
+    forces = ["20", "30", "40", "50", "60", "70", "80", "90", "100"]
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+    fig,ax = plt.subplots()
+    for n in forces:
+        val = parse_t(n, "*", "*", "*")
+        pvalue = val[:, 3, 0]
+        print(val)
+        ax.bar(n, np.mean(pvalue), label=n, color='blue')
+
+    plt.show()
+
+    val = parse_t("*", "*", "*", "*")
+    fig, ax = plt.subplots()
+    pvalue = (val[:,6,0])
+    pvalue.sort()
+    pvaluemean = np.mean(pvalue)
+    pvaluestd = np.std(pvalue)
+    normp = stats.norm.pdf(pvalue, pvaluemean, pvaluestd)
+    ax.plot(pvalue, normp) # including h here is crucial
+    plt.show()
 def plot_big2():
     # 2 = velocity
     # 3 = froude
@@ -276,6 +360,8 @@ def plot_big2():
     fig, ax = plt.subplots()
     for n in values:
         # for j in values:
+
+
         val = parse_big2("*", n, "*", "*")
         phase_difference = ((1/500)/float(n)*2)
         period = val[:,6,0]
@@ -298,7 +384,7 @@ def plot_big2():
         ax.set_ylabel("Average Froude Number")
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='blue')
         # ax.legend()
-    plt.show()
+    # plt.show()
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.set_xlabel("Froude Number")
@@ -327,7 +413,7 @@ def plot_big2():
             #     # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
             ax.scatter(froude,  cost_per_distance, float(values[g]), label=n)
     ax.legend(forces, title="Max Force")
-    plt.show()
+    # plt.show()
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
@@ -359,7 +445,7 @@ def plot_big2():
                 #     # plt.title("Froude Number, Distance Travelled and Cost Of Locomotion")
                 ax.scatter(float(l), float(n), froude)
         # ax.legend(values, title="Oscillations")
-    plt.show()
+    # plt.show()
 
     fig, ax = plt.subplots()
     force_p = []
@@ -377,7 +463,10 @@ def plot_big2():
         perc = len(froude_ind[0])/len(val[:,5,0])
         print(str(perc*100) + "%")
         force_p.append([perc, float(n)])
-
+        # data = np.array([n,np.mean(val[:,3,0])/0.3])
+        std = (np.mean(val[:,3,1])/0.3)
+        mean = (np.mean(val[:,3,0])/0.3)
+        # mu, std = norm.fit()
         # ax.set_xlabel("Froude Number")
         # ax.set_zlabel("Distance")
         # ax.set_ylabel("Cost Of Locomotion")
@@ -386,10 +475,10 @@ def plot_big2():
         # plt.title("Laikago Performing Walking Gait In PyBullet")
         ax.set_xlabel("Max Force Applied")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1])*2, color='green')
+        ax.bar(n, mean, label=n, yerr=std, color='green')
+
         # ax.legend()
-    plt.show()
-    fig, ax = plt.subplots()
+    # plt.show()
     # for n in force_p:
     #     ax.plot(n[0]*100, n[1])
     # plt.show()
@@ -438,34 +527,59 @@ def plot_big2():
         ax.set_ylabel("Average Froude Number")
         ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='red')
         # ax.legend()
-    plt.show()
+    val = parse_big2("*", "*", "*", "*")
     fig, ax = plt.subplots()
-    hip=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
+    cost = (val[:,6,0]/val[:,4,0])
+    cost = np.where(cost > 0, cost, 0)
+    cost.sort()
+    costmean = np.mean(cost)
+    std = np.std(cost)
+    norm = stats.norm.pdf(cost, costmean, std)
+    plt.title("Distribution Of Cost Of Locomotion Values")
+    ax.set_xlabel("Cost Of Locomotion")
+    ax.set_ylabel("Probability")
+    ax.plot(cost, norm) # including h here is crucial
 
-    for n in hip:
-        # for j in values:
-        val = parse_big2("*", "*", "*", n)
-
-        phase_difference = ((1/500)/float(n)*2)
-        period = val[:,6,0]
-        period2 = period/phase_difference
-        cost_per_distance = val[:,5,0]/val[:,4,0]
-        cost_per_distance = np.clip(cost_per_distance, 0, 1000)
-        cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
-
-        # ax.set_xlabel("Froude Number")
-        # ax.set_zlabel("Distance")
-        # ax.set_ylabel("Cost Of Locomotion")
-        # ax.scatter(val[:,3,0],  float(j), float(n))
-        plt.title("Average Froude Number against Leg Rotation")
-        ax.set_xlabel("Leg Rotation")
-        ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='red')
-        # ax.legend()
+    fig, ax = plt.subplots()
+    froude = (val[:,3,0]/0.3)
+    froude.sort()
+    froudemean = np.mean(froude)
+    froudestd = np.std(froude)
+    normf = stats.norm.pdf(froude, froudemean, froudestd)
+    plt.title("Distribution Of Froude Number Values")
+    ax.set_xlabel("Froude Number")
+    ax.set_ylabel("Probability")
+    ax.plot(froude, normf) # including h here is crucial
     plt.show()
+
+    # fig, ax = plt.subplots()
+    # hip=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
+    #
+    # for n in hip:
+    #     # for j in values:
+    #     val = parse_big2("*", "*", "*", n)
+    #
+    #     phase_difference = ((1/500)/float(n)*2)
+    #     period = val[:,6,0]
+    #     period2 = period/phase_difference
+    #     cost_per_distance = val[:,5,0]/val[:,4,0]
+    #     cost_per_distance = np.clip(cost_per_distance, 0, 1000)
+    #     cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
+    #
+    #     # ax.set_xlabel("Froude Number")
+    #     # ax.set_zlabel("Distance")
+    #     # ax.set_ylabel("Cost Of Locomotion")
+    #     # ax.scatter(val[:,3,0],  float(j), float(n))
+    #     plt.title("Average Froude Number against Leg Rotation")
+    #     ax.set_xlabel("Leg Rotation")
+    #     ax.set_ylabel("Average Froude Number")
+    #     ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='red')
+    #     # ax.legend()
+    # plt.show()
 # plot_big()
 # plot_big2
 plot_big2()
+plot_t()
 # plot_ex2()
 # plot_angles()
 # plt.scatter(values[:, 0, 0], values[:, 3, 0])
