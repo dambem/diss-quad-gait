@@ -554,7 +554,7 @@ def plot_big2():
     lege = ["All", "020", "030", "040", "050", "060", "070", "080", "090", "100"]
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
     lege = []
-    legen = "All- " + ", μ: " + str(froudemean) + ", σ²: " + str(froudestd**2)
+    legen = "All- " + " μ: " + str(round(froudemean, 3)) + ", σ²: " + str(round(froudestd**2, 3))
     lege.append(legen)
     ax.plot(froude, normf) # including h here is crucial
     for n in values:
@@ -565,12 +565,14 @@ def plot_big2():
         froudestd = np.std(froude)
         normf = stats.norm.pdf(froude, froudemean, froudestd)
         ax.plot(froude, normf)
-        legen = n + "- " + "μ: " + str(froudemean) + "σ²: " + str(froudestd**2)
+        legen = n + "- " + " μ: " + str(round(froudemean, 3)) + ", σ²: " + str(round(froudestd**2,3))
         lege.append(legen)
     ax.legend(lege, title="Oscillator Values")
 
 
     fig, ax = plt.subplots()
+    val = parse_big2("*", "*", "*", "*")
+
     froude = (val[:,3,0]/0.3)
     froude.sort()
     froudemean = np.mean(froude)
@@ -581,18 +583,18 @@ def plot_big2():
     ax.set_ylabel("Probability")
     forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100"]
     lege = []
-    legen = "All- " + ", μ: " + str(froudemean) + ", σ²: " + str(froudestd**2)
-
+    legen = "All- " + " μ: " + str(round(froudemean, 3)) + ", σ²: " + str(round(froudestd**2, 3))
+    lege.append(legen)
     ax.plot(froude, normf) # including h here is crucial
     for n in forces:
-        val = parse_big2("*", n, "*", "*")
+        val = parse_big2(n, "*", "*", "*")
         froude = (val[:,3,0]/0.3)
         froude.sort()
         froudemean = np.mean(froude)
         froudestd = np.std(froude)
         normf = stats.norm.pdf(froude, froudemean, froudestd)
         ax.plot(froude, normf)
-        legen = n + "- " + "μ: " + str(froudemean) + "σ²: " + str(froudestd**2)
+        legen = n + "- " + " μ: " +str(round(froudemean, 3))+ ", σ²: " + str(round(froudestd**2, 3))
         lege.append(legen)
     ax.legend(lege, title="Max Force")
 
