@@ -51,7 +51,7 @@ hips = [front_right_hip, back_right_hip, front_left_hip, back_left_hip]
 shoulders = [front_right_shoulder, back_right_shoulder, front_left_shoulder, back_left_shoulder]
 
 end_period = 0
-p.connect(p.DIRECT)
+p.connect(p.GUI)
 position_array = np.zeros((num_epochs, 3, num_iterations))
 time_array = np.zeros((num_epochs, num_iterations))
 # displacement_array = np.zeros(num_iterations)
@@ -277,7 +277,7 @@ for e in range(num_epochs):
             # sample_timer = 0
 
             # sample_timer += time_step
-            # p.addUserDebugLine((pos_ori[0][0], pos_ori[0][1], pos_ori[0][2]), (pos_ori[0][0]+0.1, pos_ori[0][1], pos_ori[0][2]))
+            p.addUserDebugLine((pos_ori[0][0], pos_ori[0][1], pos_ori[0][2]), (pos_ori[0][0]+0.1, pos_ori[0][1], pos_ori[0][2]))
 
 
             # feedback = [fr_foot_rot, br_foot_rot, fl_foot_rot, bl_foot_rot]

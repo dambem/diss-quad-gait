@@ -5,6 +5,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import math
 import scipy.stats as stats
 from scipy.stats import norm
+
+height = 0.4
 def deg_to_rad(deg):
     return deg*(np.pi/180)
 def rad_to_deg(rad):
@@ -114,7 +116,7 @@ def plot_angles():
     ax.plot_trisurf(val2[:,0,0], val2[:,0,1], val2[:,3,0])
     ax.plot_trisurf(val3[:,0,0], val3[:,0,1], val3[:,3,0])
     plt.show()
-def dynamic_similarity(a, u, g, h, b, froude):
+def dynamic_similarity(a, g, b, froude):
     # froude = froude_number(u, g, h)
     return (a*(froude)**b)
 
@@ -134,18 +136,10 @@ def plot_ex2():
     relative_stride_length = distance/(amount_of_strides)
     print(relative_stride_length)
     # relative_stride length =
-    data = np.array((val1[:,1,0]/(0.3) ,distance/10))
+    data = np.array((val1[:,1,0]/(height) ,distance/10))
 
     # data =np.sort(data)
-    # print(data)
-    a = 2.4
-    u = 2
-    g = 9.8
-    # h = 2
-    b = 0.34
-    h = np.linspace(0.1, 0.6, 50)
-    for n in h:
-        plt.scatter(n, dynamic_similarity(a,u,g,h,b, n), marker='s', c='red')
+
     plt.scatter(data[0], data[1])
     plt.title("Distance Against Froude Number")
     plt.xlabel("Froude Number")
@@ -163,14 +157,14 @@ def plot_big():
     cost_per_distance = val1[:,5,0]/val1[:,4,0]
     cost_per_distance = np.clip(cost_per_distance, 0, 1000)
     cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
-    # values_between = np.where(froude_number <= 0.3)
+    # values_between = np.where(froude_number <= height)
     # print(values_between)
-    froude = val1[:,3,0]/(0.3)
+    froude = val1[:,3,0]/(height)
     valid_runs = np.where(cost_per_distance != 0, )
     average_cost = np.mean(cost_per_distance)
     print(average_cost)
 
-    froude_ind = np.where(froude<=0.3)
+    froude_ind = np.where(froude<=height)
     print(len(froude_ind[0]))
     # values_between = np.where(values_between[0] >= 0.1)
     # print(values_between[0])
@@ -186,7 +180,7 @@ def plot_big():
     relative_stride_length = distance/(amount_of_strides)
     # print(relative_stride_length)
     # relative_stride length =
-    data = np.array((val1[:,3,0]/(0.3) , distance, val1[:,0,0], val1[:,1,0], cost_per_distance))
+    data = np.array((val1[:,3,0]/(height) , distance, val1[:,0,0], val1[:,1,0], cost_per_distance))
 
     # data =np.sort(data)
     # print(data)
@@ -195,7 +189,7 @@ def plot_big():
     g = 9.8
     # h = 2
     b = 0.34
-    h = np.linspace(0, 0.3, 100)
+    h = np.linspace(0, height, 100)
     for n in h:
         plt.scatter(n, dynamic_similarity(a,u,g,h,b, n), marker='s', c='red')
     plt.scatter(data[0], data[1])
@@ -257,7 +251,7 @@ def parse_big2(force, osc, l, h):
             # values[val, line_c, 1] = leg_rot
     return(values)
 def parse_t(force, osc, l, h):
-    filenames = sorted(glob.glob('ttest/f'+force+'o'+osc+"*"))
+    filenames = sorted(glob.glob('ttest/f'+force+'o'+osc+"g0lttesth"+l+"*"))
     # print(len(filenames))
     values = np.zeros((len(filenames), 11, 3))
     # print(np.shape(values))
@@ -371,7 +365,7 @@ def plot_big2():
         # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
         distance = val[:,4,0]
 
-        data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
+        data = np.array((val[:,3,0]/(height) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
 
 
 
@@ -382,14 +376,14 @@ def plot_big2():
         plt.title("Average Froude Number against Oscillator Time Step")
         ax.set_xlabel("Oscillator Time Steps")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='blue')
+        ax.bar(n, np.mean(val[:,3,0])/height, label=n, yerr=np.mean(val[:,3,1]), color='blue')
         # ax.legend()
     # plt.show()
     fig = plt.figure()
     ax = fig.gca(projection='3d')
     ax.set_xlabel("Froude Number")
     ax.set_zlabel("Oscillator Time Step")
-    ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
+    ax.set_xticks([0, 0.1,0.2,height,height, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
     ax.set_ylabel("Cost Of Locomotion Per Unit Distance")
     leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "15", "16", "17","18"]
     markers = ["D", "x", "o", "s", "*", "h", "v", "1", "2", "3"]
@@ -402,9 +396,9 @@ def plot_big2():
             distance = val[:,4,0]
             arrayvalues = np.where(cost_per_distance > 0)
             # for j in arrayvalues[0]:
-            data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
-            froude = val[:,3,0]/(0.3)
-            froude_ind = np.where(np.logical_and(froude<=0.3, froude>=0.1))
+            data = np.array((val[:,3,0]/(height) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
+            froude = val[:,3,0]/(height)
+            froude_ind = np.where(np.logical_and(froude<=height, froude>=0.1))
             # valid_run = np.where(froude  0)
             # run_indices = valid_run[0]
             average_cost = np.mean(cost_per_distance)
@@ -419,7 +413,7 @@ def plot_big2():
     ax = fig.gca(projection='3d')
     ax.set_xlabel("Froude Number")
     ax.set_zlabel("Max Force")
-    # ax.set_xticks([0, 0.1,0.2,0.3,0.4, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
+    # ax.set_xticks([0, 0.1,0.2,height,height, 0.5, 0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5, 1.6,1.7,1.8,1.9,2.0, 2.1, 2.2])
     ax.set_ylabel("Hip Rotation (Degrees)")
     leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"]
     markers = ["D", "x", "o", "s", "*", "h", "v", "1", "2", "3"]
@@ -433,9 +427,9 @@ def plot_big2():
                 distance = val[:,4,0]
                 # arrayvalues = np.where(cost_per_distance > 0)
                 # for j in arrayvalues[0]:
-                data = np.array((val[:,3,0]/(0.3) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
-                froude = val[:,3,0]/(0.3)
-                froude_ind = np.where(np.logical_and(froude<=0.3, froude>=0.1))
+                data = np.array((val[:,3,0]/(height) , distance, val[:,0,0], val[:,1,0], cost_per_distance))
+                froude = val[:,3,0]/(height)
+                froude_ind = np.where(np.logical_and(froude<=height, froude>=0.1))
                 # valid_run = np.where(froude  0)
                 # run_indices = valid_run[0]
                 # for n in range()
@@ -458,14 +452,14 @@ def plot_big2():
         cost_per_distance = val[:,5,0]/val[:,4,0]
         cost_per_distance = np.clip(cost_per_distance, 0, 1000)
         # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
-        froude = val[:,3,0]/(0.3)
-        froude_ind = np.where(np.logical_and(froude<=0.4, froude>=0.01))
+        froude = val[:,3,0]/(height)
+        froude_ind = np.where(np.logical_and(froude<=height, froude>=0.01))
         perc = len(froude_ind[0])/len(val[:,5,0])
         print(str(perc*100) + "%")
         force_p.append([perc, float(n)])
-        # data = np.array([n,np.mean(val[:,3,0])/0.3])
-        std = (np.mean(val[:,3,1])/0.3)
-        mean = (np.mean(val[:,3,0])/0.3)
+        # data = np.array([n,np.mean(val[:,3,0])/height])
+        std = (np.mean(val[:,3,1])/height)
+        mean = (np.mean(val[:,3,0])/height)
         # mu, std = norm.fit()
         # ax.set_xlabel("Froude Number")
         # ax.set_zlabel("Distance")
@@ -492,9 +486,9 @@ def plot_big2():
     print(len(val[:,4,0]))
 
     print("Overall %")
-    froude = val[:,3,0]/(0.3)
+    froude = val[:,3,0]/(height)
     # print(np.where(froude >= 0.01))
-    froude_ind = np.where(np.logical_and(froude<=0.4, froude != 0))
+    froude_ind = np.where(np.logical_and(froude<=height, froude != 0))
     # froude_zeros = np.where(froude==0)
     # zero = str(len(froude_zeros)) + "%"
     # print(zero)
@@ -503,7 +497,7 @@ def plot_big2():
 
     for n in values:
         val = parse_big2("*", n, "*", "*")
-        froude = val[:,3,0]/(0.3)
+        froude = val[:,3,0]/(height)
 
     leg=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18"]
     fig, ax = plt.subplots()
@@ -525,24 +519,38 @@ def plot_big2():
         plt.title("Average Froude Number against Leg Rotation")
         ax.set_xlabel("Leg Rotation")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='red')
+        ax.bar(n, np.mean(val[:,3,0])/height, label=n, yerr=np.mean(val[:,3,1]), color='red')
         # ax.legend()
-    val = parse_big2("*", "*", "*", "*")
-    fig, ax = plt.subplots()
-    cost = (val[:,6,0]/val[:,4,0])
-    cost = np.where(cost > 0, cost, 0)
-    cost.sort()
-    costmean = np.mean(cost)
-    std = np.std(cost)
-    norm = stats.norm.pdf(cost, costmean, std)
-    plt.title("Distribution Of Cost Of Locomotion Values")
-    ax.set_xlabel("Cost Of Locomotion")
-    ax.set_ylabel("Probability")
-    ax.plot(cost, norm) # including h here is crucial
+
+    # val = parse_big2("*", "*", "*", "*")
+    # fig, ax = plt.subplots()
+    # froude = (val[:,3,0]/height)
+    # # froude = np.where(froude > 0, froude, 0)
+    # froude.sort()
+    # froudemean = np.mean(froude)
+    # froudestd = np.std(froude)
+    # norm = stats.norm.pdf(froude, froudemean, std)
+    # plt.title("Distribution Froude Number Values , μ= " + str(round(froudemean, 3)) + " , σ²= " + str(round(froudestd**2, 3)))
+    # ax.set_xlabel("Froude Number")
+    # ax.set_ylabel("Probability")
+    # ax.plot(froude, norm) # including h here is crucial
+    #
+    # val = parse_big2("*", "*", "*", "*")
+    # fig, ax = plt.subplots()
+    # cost = (val[:,6,0]/val[:,4,0])
+    # cost = np.where(cost > 0, cost, 0)
+    # cost.sort()
+    # costmean = np.mean(cost)
+    # froudestd = np.std(cost)
+    # norm = stats.norm.pdf(cost, costmean, froudestd)
+    # plt.title("Distribution Of Cost Of Locomotion Values")
+    # ax.set_xlabel("Cost Of Locomotion")
+    # ax.set_ylabel("Probability")
+    # ax.plot(cost, norm) # including h here is crucial
 
 
     fig, ax = plt.subplots()
-    froude = (val[:,3,0]/0.3)
+    froude = (val[:,3,0]/height)
     froude.sort()
     froudemean = np.mean(froude)
     froudestd = np.std(froude)
@@ -559,7 +567,7 @@ def plot_big2():
     ax.plot(froude, normf) # including h here is crucial
     for n in values:
         val = parse_big2("*", n, "*", "*")
-        froude = (val[:,3,0]/0.3)
+        froude = (val[:,3,0]/height)
         froude.sort()
         froudemean = np.mean(froude)
         froudestd = np.std(froude)
@@ -573,7 +581,7 @@ def plot_big2():
     fig, ax = plt.subplots()
     val = parse_big2("*", "*", "*", "*")
 
-    froude = (val[:,3,0]/0.3)
+    froude = (val[:,3,0]/height)
     froude.sort()
     froudemean = np.mean(froude)
     froudestd = np.std(froude)
@@ -582,13 +590,15 @@ def plot_big2():
     ax.set_xlabel("Froude Number")
     ax.set_ylabel("Probability")
     forces = ["020", "030", "040", "050", "060", "070", "080", "090", "100"]
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+
     lege = []
     legen = "All- " + " μ: " + str(round(froudemean, 3)) + ", σ²: " + str(round(froudestd**2, 3))
     lege.append(legen)
     ax.plot(froude, normf) # including h here is crucial
     for n in forces:
         val = parse_big2(n, "*", "*", "*")
-        froude = (val[:,3,0]/0.3)
+        froude = (val[:,3,0]/height)
         froude.sort()
         froudemean = np.mean(froude)
         froudestd = np.std(froude)
@@ -599,7 +609,209 @@ def plot_big2():
     ax.legend(lege, title="Max Force")
 
     plt.show()
+def plot_ttest():
+    forces = ["20", "30", "40", "50", "60", "70", "80", "90", "100"]
+    plt.xlabel("Max Force")
+    plt.ylabel("P value")
+    val = parse_t("*", "*", "*", "*")
+    force = val[:,0,0]
+    osc = val[:,1,0]
+    pleg = val[:,5,0]
+    phip = val[:,6,0]
+    pearson = stats.pearsonr(osc, pleg)
+    print(pearson)
+    pearson_osc = 0.49
+    pearson_force = 0.10
+    # plt.scatter(osc, pleg)
 
+    pearson_force = 0.499
+    plt.title("P paired t-test values against force - Pearson Correlation Coefficient: " + str(pearson))
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+    x = []
+    y = []
+    # for n in values:
+    val = parse_t("*", "*", "5", "*")
+    force = val[:,0,0]
+    osc = val[:,1,0]
+    pleg = val[:,5,0]
+    phip = val[:,6,0]
+    # pearson = stats.pearsonr(force, pleg)
+    plt.scatter(force, pleg)
+    x =(force)
+    y=(pleg)
+    pearson = stats.pearsonr(x, y)
+    print(pearson)
+    # plt.scatter(force, phip)
+
+    plt.show()
+
+def plot_froude():
+    fig, ax = plt.subplots()
+    # 0.010/0.002
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+
+    plt.title("Relative Stride Length against Froude Number")
+    ax.set_xlabel("Froude Number")
+    ax.set_ylabel("Relative Stride Length")
+    lege = []
+    # a = 1.9
+    # g = 9.8
+    # # h = 2
+    # b = 0.37
+    # h = np.linspace(height, 3, 500)
+    # med_x = []
+    # med_y = []
+    # for n in h:
+    #     med_x.append(n)
+    #     med_y.append(dynamic_similarity(a,g,b,n))
+    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
+    # plt.plot(med_x, med_y, linestyle='--')
+    # lege.append("Cursorial Mammals Faster Gaits Medium")
+    #
+    # a = 1.9
+    # g = 9.8
+    # # h = 2
+    # b = 0.43
+    # h = np.linspace(height, 3, 500)
+    # med_x = []
+    # med_y = []
+    # for n in h:
+    #     med_x.append(n)
+    #     med_y.append(dynamic_similarity(a,g,b,n))
+    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
+    # plt.plot(med_x, med_y, linestyle='--')
+    # lege.append("Cursorial Mammals Faster Gaits Medium")
+    # a = 1.9
+    # g = 9.8
+    # # h = 2
+    # b = 0.40
+    # h = np.linspace(height, 3, 500)
+    # med_x = []
+    # med_y = []
+    # for n in h:
+    #     med_x.append(n)
+    #     med_y.append(dynamic_similarity(a,g,b,n))
+    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
+    # plt.plot(med_x, med_y, linestyle='--')
+    # lege.append("Cursorial Mammals Faster Gaits Medium")
+
+    a = 2.4
+    g = 9.8
+    # h = 2
+    b = 0.34
+    h = np.linspace(0, height, 500)
+    med_x = []
+    med_y = []
+    for n in h:
+        med_x.append(n)
+        med_y.append(dynamic_similarity(a,g,b,n))
+        # plt.plot(n, dynamic_similarity(a,g,b,n))
+    plt.plot(med_x, med_y, linestyle='--')
+    lege.append("Froude Cursorial Walking")
+
+    a = 2.4
+    g = 9.8
+    # h = 2
+    b = 0.24
+    h = np.linspace(0, height, 500)
+    med_x = []
+    med_y = []
+    for n in h:
+        med_x.append(n)
+        med_y.append(dynamic_similarity(a,g,b,n))
+        # plt.plot(n, dynamic_similarity(a,g,b,n))
+    plt.plot(med_x, med_y, linestyle='--')
+    lege.append("Froude Cursorial Walking Upper Bound")
+
+    a = 2.4
+    g = 9.8
+    # h = 2
+    b = 0.44
+    h = np.linspace(0, height, 500)
+    med_x = []
+    med_y = []
+    for n in h:
+        med_x.append(n)
+        med_y.append(dynamic_similarity(a,g,b,n))
+        # plt.plot(n, dynamic_similarity(a,g,b,n))
+    plt.plot(med_x, med_y, linestyle='--')
+    lege.append("Froude Cursorial Walking Lower Bound")
+
+    # a = 2.7
+    # g = 9.8
+    # # h = 2
+    # b = 0.28
+    # h = np.linspace(0, height, 500)
+    # med_x = []
+    # med_y = []
+    # for n in h:
+    #     med_x.append(n)
+    #     med_y.append(dynamic_similarity(a,g,b,n))
+    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
+    # plt.plot(med_x, med_y, linestyle='--')
+    # lege.append("Non Cursorial")
+    # forces = [ "050", "060", "070", "080", "090"]
+
+
+    val = parse_big2("*", "*", "*", "*")
+    osc_t = val[:,1,0]
+    froude = (np.round(val[:,3,0], 3)/height)
+    time_period = (0.001/osc_t)*(np.pi)
+    time_period_s = (0.001/osc_t)
+    number_of_strides = 20/time_period
+    distance= (val[:,4,0])
+    stride_length = distance/number_of_strides
+    relative_stride_length = (stride_length/height)
+    pearson = stats.pearsonr(froude, number_of_strides)
+
+    print(str(pearson) + ": Pearson - All Data")
+    # values = ["10", "5"]
+    values = [["0.002", 0.56], ["0.004", 0.28], ["0.006", 0.19], ["0.008", 0.14], ["0.010", 0.11]]
+    for n in values:
+        val = parse_big2("*", n[0], "*", "*")
+        osc_t = val[:,1,0]
+        froude = (np.round(val[:,3,0], 3)/height)
+        time_period = n[1]
+        # time_period_s = (0.001/osc_t)
+        number_of_strides = 20/time_period
+        distance= (val[:,4,0])
+        stride_length = distance/number_of_strides
+        relative_stride_length = (stride_length/height)
+        lege.append("Oscillator: "+ str(n[0]) + " (Time Period: " + str(n[1]) + " )")
+        plt.scatter(froude, relative_stride_length, s=5)
+        pearson = stats.pearsonr(froude, number_of_strides)
+        print(str(pearson) + ": Pearson " + str(n))
+    plt.xlim(-0.01, 0.4)
+    plt.ylim(0, 2)
+    plt.legend(lege)
+
+    # a = 2.4
+    # g = 9.8
+    # # h = 2
+    # b = 0.44
+    # h = np.linspace(0, height, 50)
+    # med_x = []
+    # med_y = []
+    # for n in h:
+    #     med_x.append(n)
+    #     med_y.append(dynamic_similarity(a,g,b,n))
+    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
+    # plt.plot(med_x, med_y)
+    #
+    # a = 2.4
+    # g = 9.8
+    # # h = 2
+    # b = 0.24
+    # h = np.linspace(0, height, 50)
+    # med_x = []
+    # med_y = []
+    # for n in h:
+    #     med_x.append(n)
+    #     med_y.append(dynamic_similarity(a,g,b,n))
+    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
+    # plt.plot(med_x, med_y)
+
+    plt.show()
 
     # fig, ax = plt.subplots()
     # hip=["05", "06", "07", "08", "09", "10", "11", "12", "13", "14"]
@@ -622,13 +834,34 @@ def plot_big2():
     #     plt.title("Average Froude Number against Leg Rotation")
     #     ax.set_xlabel("Leg Rotation")
     #     ax.set_ylabel("Average Froude Number")
-    #     ax.bar(n, np.mean(val[:,3,0])/0.3, label=n, yerr=np.mean(val[:,3,1]), color='red')
+    #     ax.bar(n, np.mean(val[:,3,0])/height, label=n, yerr=np.mean(val[:,3,1]), color='red')
     #     # ax.legend()
     # plt.show()
 # plot_big()
 # plot_big2
-plot_big2()
-plot_t()
+    # print(data)
+def parse_t(force, osc, g):
+    filenames = sorted(glob.glob("struc/f"+force+"o"+osc+"g"+g+"*"))
+    # print(len(filenames))
+    values = np.zeros((len(filenames), 11, 3))
+    # print(np.shape(values))
+    val = 0
+    for f in filenames:
+        with open(f, 'r') as fp:
+            distance = fp.readline()
+            froude = fp.readline()
+            values[0] = distance
+            values[1] = froude
+    return(values)
+
+
+def plot
+print (parse_t("*", "*", "0"))
+#
+# plot_big2()
+# plot_t()
+# plot_froude()
+# plot_ttest()
 # plot_ex2()
 # plot_angles()
 # plt.scatter(values[:, 0, 0], values[:, 3, 0])

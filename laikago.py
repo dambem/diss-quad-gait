@@ -6,6 +6,7 @@ import datetime
 from scipy.integrate import odeint
 import scipy.signal as signal
 import sys
+import array2latex as a2l
 
 
 def deg_to_rad(deg):

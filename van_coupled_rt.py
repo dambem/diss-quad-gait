@@ -26,16 +26,7 @@ def van_der_pol_oscillator_deriv(x, t):
     return res
 oscillator_values = [0,0,0,0]
 
-def van_der_pol_coupled(x, t):
-    x0 = x[1]
-    x_ai = x[0]
-    for j in range(4):
-        x_ai += (lamb[current_i][j]*oscillator_values[j])
-    x_ai = x_ai
-    x1 = x[0]
-    x0 =  oscillator_values[current_i] + mu * ((p - (x_ai** 2.0))* x0) - x_ai*w
-    res = np.array([x0, x1])
-    return res
+
 
 start_time = time.time()
 prev_time = time.time()
@@ -47,6 +38,18 @@ start_y = [1,1,1,1]
 start_x = [0,0,0,0]
 new_y = [1,1,1,1]
 new_x = [0,0,0,0]
+
+def van_der_pol_coupled(x, t):
+    x0 = x[1]
+    x_ai = x[0]
+    for j in range(4):
+        x_ai += (lamb[current_i][j]*oscillator_values[j])
+    x_ai = x_ai
+    x1 = x[0]
+    x0 =  oscillator_values[current_i] + mu * ((p - (x_ai** 2.0))* x0) - x_ai*w
+    res = np.array([x0, x1])
+    return res
+    
 while (count <= 20):
     count+= time_step
     mu = 1
