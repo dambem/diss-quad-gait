@@ -841,23 +841,221 @@ def plot_froude():
 # plot_big2
     # print(data)
 def parse_t(force, osc, g):
-    filenames = sorted(glob.glob("struc/f"+force+"o"+osc+"g"+g+"*"))
-    # print(len(filenames))
-    values = np.zeros((len(filenames), 11, 3))
-    # print(np.shape(values))
+    name ="struc/f"+force+"o"+osc+"g"+g+"lstruch10log.txt"
+    filenames = sorted(glob.glob(name))
+    values = np.zeros((len(filenames), 2))
     val = 0
+    #
     for f in filenames:
         with open(f, 'r') as fp:
             distance = fp.readline()
             froude = fp.readline()
-            values[0] = distance
-            values[1] = froude
+            values[val, 0] = distance
+            values[val, 1] = froude
+        val += 1
+    return(values)
+
+def parse_gaits(force, osc, g):
+    name ="gait_var/f"+force+"o"+osc+"g"+g+"lgait_varh10log.txt"
+    filenames = sorted(glob.glob(name))
+    values = np.zeros((len(filenames), 2))
+    val = 0
+    #
+    for f in filenames:
+        with open(f, 'r') as fp:
+            distance = fp.readline()
+            froude = fp.readline()
+            values[val, 0] = distance
+            values[val, 1] = froude
+        val += 1
     return(values)
 
 
-def plot
-print (parse_t("*", "*", "0"))
-#
+def plot_experiments():
+    osc = ["0.010", "0.008", "0.006", "0.004", "0.002", "0.001", "0.0008", "0.0006"]
+    # osc = ["0.010", "0.008", "0.006", "0.004", "0.002", "0.001", "0.0008", "0.0006", "0.0004", "0.0002"]
+
+    force = ["010", "020", "030", "040", "050", "060", "070", "080", "090" ,"100", "110","120"]
+    # force = [ "020", "030", "040", "050", "060", "070", "080", "090" ,"100"]
+
+    gait = ["0", "1", "2"]
+    # matrix = []
+    # np.array()
+    fig = plt.figure()
+    plt.subplot(131)
+    ax = plt.gca()
+    xval = 0
+    yval =0
+    leng = len(parse_t("*", "*", "0"))
+    # array =np.array((leng/2, leng/2))
+
+    array = np.zeros((len(osc), len(force)))
+    # array = []
+    val = 0
+    for n in osc:
+        yval = 0
+        for j in force:
+            print(yval)
+            print(xval)
+            val = parse_t(j, n, "0")
+            if (val[0][0] < 1):
+                array[xval, yval] = 0
+            else:
+                array[xval, yval] = 1
+            yval += 1
+        xval +=1
+    plt.imshow(array, cmap="hot")
+    locs, labels = plt.xticks()
+    print(labels)
+    plt.title("Succesful Gait Systematic Test (Walking)")
+    plt.ylabel("Oscillator time-steps")
+    plt.xlabel("Max force applied")
+    plt.yticks(np.arange(0,len(osc), step=1), osc)
+    plt.xticks(np.arange(0,len(force), step=1), force)
+    ax.set_yticks(np.arange(-.5, len(osc), 1), minor=True);
+    ax.set_xticks(np.arange(-.5, len(force), 1), minor=True);
+    ax.grid(which = "minor", color = "grey", linestyle="--", linewidth=2)
+
+    plt.subplot(132)
+    ax = plt.gca()
+    xval = 0
+    yval =0
+    leng = len(parse_t("*", "*", "1"))
+    # array =np.array((leng/2, leng/2))
+
+    array = np.zeros((len(osc), len(force)))
+    # array = []
+    val = 0
+    for n in osc:
+        yval = 0
+        for j in force:
+            print(yval)
+            print(xval)
+            val = parse_t(j, n, "1")
+            if (val[0][0] < 1):
+                array[xval, yval] = 0
+            else:
+                array[xval, yval] = 1
+            yval += 1
+        xval +=1
+    plt.imshow(array, cmap="hot")
+    locs, labels = plt.xticks()
+    print(labels)
+    plt.title("Succesful Gait Systematic Test (Trotting)")
+    plt.ylabel("Oscillator time-steps")
+    plt.xlabel("Max force applied")
+    plt.yticks(np.arange(0,len(osc), step=1), osc)
+    plt.xticks(np.arange(0,len(force), step=1), force)
+    ax.set_yticks(np.arange(-.5, len(osc), 1), minor=True);
+    ax.set_xticks(np.arange(-.5, len(force), 1), minor=True);
+    ax.grid(which = "minor", color = "grey", linestyle="--", linewidth=2)
+
+
+    plt.subplot(133)
+    ax = plt.gca()
+    xval = 0
+    yval =0
+    leng = len(parse_t("*", "*", "2"))
+    # array =np.array((leng/2, leng/2))
+
+    array = np.zeros((len(osc), len(force)))
+    # array = []
+    val = 0
+    for n in osc:
+        yval = 0
+        for j in force:
+            print(yval)
+            print(xval)
+            val = parse_t(j, n, "2")
+            if (val[0][0] < 1):
+                array[xval, yval] = 0
+            else:
+                array[xval, yval] = 1
+            yval += 1
+        xval +=1
+    plt.imshow(array, cmap="hot")
+    locs, labels = plt.xticks()
+    print(labels)
+    plt.title("Succesful Gait Systematic Test (Bounding)")
+    plt.ylabel("Oscillator time-steps")
+    plt.xlabel("Max force applied")
+    plt.yticks(np.arange(0,len(osc), step=1), osc)
+    plt.xticks(np.arange(0,len(force), step=1), force)
+    ax.set_yticks(np.arange(-.5, len(osc), 1), minor=True);
+    ax.set_xticks(np.arange(-.5, len(force), 1), minor=True);
+    ax.grid(which = "minor", color = "grey", linestyle="--", linewidth=2)
+
+    plt.show()
+# plot_experiments()
+
+
+def plot_experiments2():
+    osc = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+    force = ["020", "030", "040", "050", "060", "070", "080", "090" ,"100"]
+    gait = ["0", "1", "2"]
+    # fig = plt.figure()
+    # ax = plt.gca()
+    # leng = len(parse_t("*", "*", "0"))
+    fig, ax = plt.subplots()
+    plt.ylabel("Probability Density")
+    plt.xlabel("Froude Number")
+    plt.title("Distribution of Froude number on Walking, Trotting and Bounding")
+    lege = []
+    # for n in force:
+    val = parse_gaits("*", "*",  "0")
+    ind = np.where(val[:,0] > 1)
+    # print(val[0])
+    values = np.zeros(len(ind[0]))
+    count = 0
+    for n in ind[0]:
+        values[count] = val[n,1]
+        count +=1
+    froude = (values/height)
+    froude.sort()
+    froudemean = np.mean(froude)
+    froudestd = np.std(froude)
+    normf = stats.norm.pdf(froude, froudemean, froudestd)
+    ax.plot(froude, normf)
+    legen =  "Walking- " + " μ: " + str(round(froudemean, 3)) + ", σ²: " + str(round(froudestd**2,3))
+    lege.append(legen)
+    # for n in force:
+    val = parse_gaits("*", "*",  "1")
+    ind = np.where(val[:,0] > 1)
+    # print(val[0])
+    values = np.zeros(len(ind[0]))
+    count = 0
+    for n in ind[0]:
+        values[count] = val[n,1]
+        count +=1
+    froude = (values/height)
+    froude.sort()
+    froudemean = np.mean(froude)
+    froudestd = np.std(froude)
+    normf = stats.norm.pdf(froude, froudemean, froudestd)
+    ax.plot(froude, normf)
+    legen = "Trotting- " + " μ: " + str(round(froudemean, 3)) + ", σ²: " + str(round(froudestd**2,3))
+    lege.append(legen)
+    # for n in force:
+    val = parse_gaits("*", "*",  "2")
+    ind = np.where(val[:,0] > 1)
+    # print(val[0])
+    values = np.zeros(len(ind[0]))
+    count = 0
+    for n in ind[0]:
+        values[count] = val[n,1]
+        count +=1
+    froude = (values/height)
+    froude.sort()
+    froudemean = np.mean(froude)
+    froudestd = np.std(froude)
+    normf = stats.norm.pdf(froude, froudemean, froudestd)
+    ax.plot(froude, normf)
+    legen = "Bounding- " + " μ: " + str(round(froudemean, 3)) + ", σ²: " + str(round(froudestd**2,3))
+    lege.append(legen)
+    ax.legend(lege, title="Gaits")
+    plt.show()
+plot_experiments2()
+
 # plot_big2()
 # plot_t()
 # plot_froude()
