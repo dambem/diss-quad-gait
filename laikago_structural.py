@@ -407,37 +407,15 @@ for n in range(num_epochs):
     period_average[n] = np.mean(period_foot[n,:])
 
 string = ""
-# mean_velocity = np.mean(velocity)
-# std_velocity = np.std(velocity)
+
 mean_froude = np.mean(froude_number)
-# std_froude = np.std(froude_number)
-# mean_force = np.mean(force_values)
-# std_force = np.std(force_values)
-# mean_time = np.mean(final_time)
-# std_time = np.std(final_time)
 mean_distance =  np.mean(distance_val)
-# std_distance = np.std(distance_val)
-# mean_cost = np.mean(cost_transport)
-# std_cost = np.std(cost_transport)
-# mean_period = np.mean(period_average)
-# std_period = np.std(period_average)
+
 run_name = sys.argv[4]+"/f"+sys.argv[1]+"o"+sys.argv[2]+"g"+sys.argv[3]+"l"+sys.argv[4]+"h"+sys.argv[5]
 run_log = open(run_name+"log.txt", "w+")
-# saved_calc = [[mean_velocity, std_velocity], [mean_froude, std_froude], [mean_distance, std_distance], [mean_cost, std_cost], [mean_period, std_period]]
-# string = "Oscillator Step: " + str(oscillator_step) + "\n"
-# string += "Max Force: " + str(max_force) + "\n"
-# string += "Gait: " + sys.argv[3] + "\n"
-# string += "Leg Rotation: " + str(foot_angle) + "\n"
-# string += "Hip Rotation: " + str(hip_angle) + "\n"
-# string += "P Value Leg: " + str(pavg_foot) + "\n"
-# string += "P Value Hip: " + str(pavg_hip) + "\n"
-# string += "T Value Leg: " + str(tavg_foot) + "\n"
-# string += "T Value Hip: " + str(tavg_hip) + "\n"
+
 string += str(mean_distance) + "\n"
 string += str(mean_froude)
-# string += ""
 run_log.write(string)
-# for item in saved_calc:
-#     string = str(item[0])+":"+str(item[1])+"\n"
-#     run_log.write(string)
+
 run_log.close()

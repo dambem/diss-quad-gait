@@ -5,12 +5,15 @@ from mpl_toolkits.mplot3d import Axes3D
 import math
 import scipy.stats as stats
 from scipy.stats import norm
-
+import pandas as pd
+import sklearn.metrics as sk
 height = 0.4
+
 def deg_to_rad(deg):
     return deg*(np.pi/180)
 def rad_to_deg(rad):
     return rad/(np.pi/180)
+
 def parse_big():
     filenames = sorted(glob.glob('big/*'))
     # print(len(filenames))
@@ -322,10 +325,11 @@ def plot_t():
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
     fig,ax = plt.subplots()
     for n in forces:
-        val = parse_t(n, "*", "*", "*")
-        pvalue = val[:, 3, 0]
-        print(val)
-        ax.bar(n, np.mean(pvalue), label=n, color='blue')
+        for j in values:
+            val = parse_t(n, j, "*", "*")
+            pvalue = val[:, 3, 0]
+            print(val)
+            ax.bar(n, np.mean(pvalue), label=n, color='blue')
 
     plt.show()
 
@@ -338,6 +342,7 @@ def plot_t():
     normp = stats.norm.pdf(pvalue, pvaluemean, pvaluestd)
     ax.plot(pvalue, normp) # including h here is crucial
     plt.show()
+
 def plot_big2():
     # 2 = velocity
     # 3 = froude
@@ -443,9 +448,10 @@ def plot_big2():
 
     fig, ax = plt.subplots()
     force_p = []
-    for n in forces:
+    values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
+    for n in values:
         # for j in values:
-        val = parse_big2(n, "*", "*", "*")
+        val = parse_big2("*", n, "*", "*")
         phase_difference = ((1/500)/float(n)*2)
         period = val[:,6,0]
         period2 = period/phase_difference
@@ -453,8 +459,10 @@ def plot_big2():
         cost_per_distance = np.clip(cost_per_distance, 0, 1000)
         # cost_per_distance = np.where(cost_per_distance < 1000, cost_per_distance, 0)
         froude = val[:,3,0]/(height)
-        froude_ind = np.where(np.logical_and(froude<=height, froude>=0.01))
+        # valid_gaits
+        froude_ind = np.where(np.logical_and(froude<=height, froude >= 0.001))
         perc = len(froude_ind[0])/len(val[:,5,0])
+        print(str(n))
         print(str(perc*100) + "%")
         force_p.append([perc, float(n)])
         # data = np.array([n,np.mean(val[:,3,0])/height])
@@ -469,7 +477,7 @@ def plot_big2():
         # plt.title("Laikago Performing Walking Gait In PyBullet")
         ax.set_xlabel("Max Force Applied")
         ax.set_ylabel("Average Froude Number")
-        ax.bar(n, mean, label=n, yerr=std, color='green')
+        # ax.boxplot(n, mean, label=n, yerr=std, color='green')
 
         # ax.legend()
     # plt.show()
@@ -488,7 +496,7 @@ def plot_big2():
     print("Overall %")
     froude = val[:,3,0]/(height)
     # print(np.where(froude >= 0.01))
-    froude_ind = np.where(np.logical_and(froude<=height, froude != 0))
+    froude_ind = np.where(np.logical_and(froude<=height, froude >= 0.001))
     # froude_zeros = np.where(froude==0)
     # zero = str(len(froude_zeros)) + "%"
     # print(zero)
@@ -626,39 +634,59 @@ def plot_ttest():
 
     pearson_force = 0.499
     plt.title("P paired t-test values against force - Pearson Correlation Coefficient: " + str(pearson))
+    forces = ["20", "30", "40", "50", "60", "70", "80", "90", "100"]
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
     x = []
     y = []
     # for n in values:
-    val = parse_t("*", "*", "5", "*")
-    force = val[:,0,0]
-    osc = val[:,1,0]
-    pleg = val[:,5,0]
-    phip = val[:,6,0]
-    # pearson = stats.pearsonr(force, pleg)
-    plt.scatter(force, pleg)
-    x =(force)
-    y=(pleg)
-    pearson = stats.pearsonr(x, y)
-    print(pearson)
+    table = np.zeros((len(forces), len(values)))
+    f_count = 0
+    v_count = 0
+    for n in forces:
+        v_count = 0
+        for j in values:
+            val = parse_t(n, j, "5", "5")
+            force = val[:,0,0]
+            osc = val[:,1,0]
+            pleg = val[:,5,0]
+            phip = val[:,6,0]
+            table[f_count, v_count] = pleg
+            v_count +=1
+        f_count+=1
+            # pearson = stats.pearsonr(force, pleg)
+    print(pd.DataFrame(table))
+    plt.imshow(table, cmap="hot")
+    locs, labels = plt.xticks()
+    ax = plt.gca()
+    plt.title("Succesful Gait Systematic Test (Bounding)")
+    plt.xlabel("Oscillator time-steps")
+    plt.ylabel("Max force applied")
+    plt.xticks(np.arange(0,len(values), step=1), values)
+    plt.yticks(np.arange(0,len(forces), step=1), forces)
+    ax.set_xticks(np.arange(-.5, len(values), 1), minor=True);
+    ax.set_yticks(np.arange(-.5, len(forces), 1), minor=True);
+    ax.grid(which = "minor", color = "grey", linestyle="--", linewidth=2)
+            # plt.scatter(j, phip)
+            # x =(force)
+            # y= (leg)
+            # pearson = stats.pearsonr(x, y)
+            # print(pearson)
     # plt.scatter(force, phip)
-
     plt.show()
 
 def plot_froude():
     fig, ax = plt.subplots()
     # 0.010/0.002
     values = ["0.010", "0.008", "0.006", "0.004", "0.002"]
-
     plt.title("Relative Stride Length against Froude Number")
     ax.set_xlabel("Froude Number")
     ax.set_ylabel("Relative Stride Length")
     lege = []
-    # a = 1.9
+    # a = 2.4
     # g = 9.8
     # # h = 2
-    # b = 0.37
-    # h = np.linspace(height, 3, 500)
+    # b = 0.34
+    # h = np.linspace(0, height, 500)
     # med_x = []
     # med_y = []
     # for n in h:
@@ -666,13 +694,13 @@ def plot_froude():
     #     med_y.append(dynamic_similarity(a,g,b,n))
     #     # plt.plot(n, dynamic_similarity(a,g,b,n))
     # plt.plot(med_x, med_y, linestyle='--')
-    # lege.append("Cursorial Mammals Faster Gaits Medium")
+    # lege.append("Froude Cursorial Walking")
     #
-    # a = 1.9
+    # a = 2.4
     # g = 9.8
     # # h = 2
-    # b = 0.43
-    # h = np.linspace(height, 3, 500)
+    # b = 0.24
+    # h = np.linspace(0, height, 500)
     # med_x = []
     # med_y = []
     # for n in h:
@@ -680,48 +708,7 @@ def plot_froude():
     #     med_y.append(dynamic_similarity(a,g,b,n))
     #     # plt.plot(n, dynamic_similarity(a,g,b,n))
     # plt.plot(med_x, med_y, linestyle='--')
-    # lege.append("Cursorial Mammals Faster Gaits Medium")
-    # a = 1.9
-    # g = 9.8
-    # # h = 2
-    # b = 0.40
-    # h = np.linspace(height, 3, 500)
-    # med_x = []
-    # med_y = []
-    # for n in h:
-    #     med_x.append(n)
-    #     med_y.append(dynamic_similarity(a,g,b,n))
-    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
-    # plt.plot(med_x, med_y, linestyle='--')
-    # lege.append("Cursorial Mammals Faster Gaits Medium")
-
-    a = 2.4
-    g = 9.8
-    # h = 2
-    b = 0.34
-    h = np.linspace(0, height, 500)
-    med_x = []
-    med_y = []
-    for n in h:
-        med_x.append(n)
-        med_y.append(dynamic_similarity(a,g,b,n))
-        # plt.plot(n, dynamic_similarity(a,g,b,n))
-    plt.plot(med_x, med_y, linestyle='--')
-    lege.append("Froude Cursorial Walking")
-
-    a = 2.4
-    g = 9.8
-    # h = 2
-    b = 0.24
-    h = np.linspace(0, height, 500)
-    med_x = []
-    med_y = []
-    for n in h:
-        med_x.append(n)
-        med_y.append(dynamic_similarity(a,g,b,n))
-        # plt.plot(n, dynamic_similarity(a,g,b,n))
-    plt.plot(med_x, med_y, linestyle='--')
-    lege.append("Froude Cursorial Walking Upper Bound")
+    # lege.append("Froude Cursorial Walking Upper Bound")
 
     a = 2.4
     g = 9.8
@@ -737,21 +724,6 @@ def plot_froude():
     plt.plot(med_x, med_y, linestyle='--')
     lege.append("Froude Cursorial Walking Lower Bound")
 
-    # a = 2.7
-    # g = 9.8
-    # # h = 2
-    # b = 0.28
-    # h = np.linspace(0, height, 500)
-    # med_x = []
-    # med_y = []
-    # for n in h:
-    #     med_x.append(n)
-    #     med_y.append(dynamic_similarity(a,g,b,n))
-    #     # plt.plot(n, dynamic_similarity(a,g,b,n))
-    # plt.plot(med_x, med_y, linestyle='--')
-    # lege.append("Non Cursorial")
-    # forces = [ "050", "060", "070", "080", "090"]
-
 
     val = parse_big2("*", "*", "*", "*")
     osc_t = val[:,1,0]
@@ -766,9 +738,9 @@ def plot_froude():
 
     print(str(pearson) + ": Pearson - All Data")
     # values = ["10", "5"]
-    values = [["0.002", 0.56], ["0.004", 0.28], ["0.006", 0.19], ["0.008", 0.14], ["0.010", 0.11]]
+    values = [["0.002", 0.56], ["0.004", 0.28]]
     for n in values:
-        val = parse_big2("*", n[0], "*", "*")
+        val = parse_big2("*", n[0], "*", "10")
         osc_t = val[:,1,0]
         froude = (np.round(val[:,3,0], 3)/height)
         time_period = n[1]
@@ -779,6 +751,20 @@ def plot_froude():
         relative_stride_length = (stride_length/height)
         lege.append("Oscillator: "+ str(n[0]) + " (Time Period: " + str(n[1]) + " )")
         plt.scatter(froude, relative_stride_length, s=5)
+        g = 9.8
+        # h = 2
+        b = 0.44
+        print(np.max(froude))
+        h = np.linspace(0, np.max(froude), len(froude))
+        med_x = []
+        med_y = []
+        for n in h:
+            med_x.append(n)
+            med_y.append(dynamic_similarity(a,g,b,n))
+
+        ttest =  sk.r2_score([med_x, med_y], [froude, relative_stride_length],  multioutput='variance_weighted')
+        print(str(ttest) + "-TTEST")
+
         pearson = stats.pearsonr(froude, number_of_strides)
         print(str(pearson) + ": Pearson " + str(n))
     plt.xlim(-0.01, 0.4)
@@ -840,7 +826,66 @@ def plot_froude():
 # plot_big()
 # plot_big2
     # print(data)
-def parse_t(force, osc, g):
+
+def parse_t(force, osc, l, h):
+    filenames = sorted(glob.glob('ttest/f'+force+'o'+osc+"g0lttesth"+l+"*"))
+    # print(len(filenames))
+    values = np.zeros((len(filenames), 11, 3))
+    # print(np.shape(values))
+    val = 0
+    for f in filenames:
+        with open(f, 'r') as fp:
+            line = fp.readline()
+            line = line.split(":")
+            maxforce = fp.readline()
+            maxforce = maxforce.split(':')
+            gait = fp.readline()
+            leg_rot = fp.readline()
+            hip_rot = fp.readline()
+            leg_p = fp.readline()
+            hip_p = fp.readline()
+            leg_t = fp.readline()
+            hip_t = fp.readline()
+            pvalleg = leg_p.split(':')
+            pvalhip = hip_p.split(':')
+            tvalleg = leg_t.split(':')
+            tvalhip = hip_t.split(':')
+            leg_p_val = float(pvalleg[1])
+            leg_t_val = float(tvalleg[1])
+            hip_p_val = float(pvalhip[1])
+            hip_t_val = float(tvalhip[1])
+            line_c = 0
+            force_val = float(maxforce[1])
+            oscil_val = float(line[1])
+            values[val, line_c, 0] = force_val
+            line_c += 1
+            values[val, line_c, 0] = oscil_val
+            line_c += 1
+            values[val, line_c, 0] = leg_t_val
+            line_c += 1
+            values[val, line_c, 0] = leg_p_val
+            line_c += 1
+            values[val, line_c, 0] = hip_t_val
+            line_c += 1
+            values[val, line_c, 0] = hip_p_val
+            line_c += 1
+            while line:
+                line = fp.readline()
+                data = line.split(':')
+                if (len(data) == 1):
+                    continue;
+                val_d = float(data[0])
+                val_sd = float(data[1])
+                values[val, line_c, 0] = val_d
+                values[val, line_c, 1] = val_sd
+                values[val, line_c, 2] = force_val
+                line_c += 1
+            val += 1
+            # values[val, line_c, 0] = hip_rot
+            # values[val, line_c, 1] = leg_rot
+    return(values)
+
+def parse_struc(force, osc, g):
     name ="struc/f"+force+"o"+osc+"g"+g+"lstruch10log.txt"
     filenames = sorted(glob.glob(name))
     values = np.zeros((len(filenames), 2))
@@ -897,7 +942,7 @@ def plot_experiments():
         for j in force:
             print(yval)
             print(xval)
-            val = parse_t(j, n, "0")
+            val = parse_t(j, n, "0", "*")
             if (val[0][0] < 1):
                 array[xval, yval] = 0
             else:
@@ -1054,11 +1099,11 @@ def plot_experiments2():
     lege.append(legen)
     ax.legend(lege, title="Gaits")
     plt.show()
-plot_experiments2()
-
-# plot_big2()
-# plot_t()
-# plot_froude()
+# plot_experiments2()
+# plot_experiments()
+plot_big2()
+# plot_ttest()
+plot_froude()
 # plot_ttest()
 # plot_ex2()
 # plot_angles()
