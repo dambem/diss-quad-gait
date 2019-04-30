@@ -1,13 +1,15 @@
 # Central Pattern Generator For Quadruped Robot
 The following files implement a central pattern generator in PyBullet as well as a method for parsing and measuring quadruped data.
 
+# Acknowledgments
+[Original Van Der Pol Oscillator Code](http://dropbearcode.blogspot.com/2012/05/python-simulation-of-van-der-pol.html)
+
 ## Requirements
 In order to run this code, the following libraries are required. The libraries can be installed by running the following command:
 
 ```
 pip install -r pipmodules.txt
 ```
-
 
 [pybullet](https://pypi.org/project/pybullet/)
 
@@ -18,7 +20,7 @@ pip install -r pipmodules.txt
 [pybullet](https://pybullet.com)
 
 ### Example Run
-Running showcase_example.sh will run the following python code
+Running showcase_example.sh will run the following python code, which will
 ```
 laikago_GUI.py 40 0.006 0 x 10 10
 ```

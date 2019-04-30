@@ -2,7 +2,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-
+# The original van der pol oscillator has been adapted from http://dropbearcode.blogspot.com/2012/05/python-simulation-of-van-der-pol.html
 # l - coupling coefficient
 l = 0.1
 
@@ -53,6 +53,8 @@ start_x = [0,0,0,0]
 new_y = [1, 1, 1, 1]
 new_x = [0,0,0,0]
 oscillator_values = []
+iterations = 10000
+gaitvalues = np.zeros(iterations, 4)
 while (count <= 10):
     count+= time_step
     current_time = time.time()
