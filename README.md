@@ -56,17 +56,26 @@ ttest.py runs for 10000 iterations and produces a paired t-test of values.
 ## Experiments
 Experiments can be seen by running plot_main_results.py. This parses a folder and returns all experiments. Current set of experiments are the following:
 
+
 print_percentages() -  Prints percentage of values below froude number values of 0.4
+
 oscillator_vs_froude_bar() - Prints a bar chart of average oscillator time-step vs froude number
+![](graphs/froude_vs_oscillation.png)'
 plot_3d() - plots a 3d graph of all combinations of values
+![](graphs/3dgraph.png)
 plot_distribution() - plots distributions found in dissertation
+![](graphs/froudedistribution.png)
+
 plot_froude() - plots froude number graph found in dissertation
 
 ##  Misc
+
 ### van.py
-produces a single uncoupled van der pol oscillator
+Produces a single uncoupled van der pol oscillator
 ### van_coupled_rt.py
-produces a real-time graph of coupled van der pol oscillators
+Produces a real-time graph of coupled van der pol oscillators
+### dynamic_similarity.py
+Produces an example of dynamic similarity
 <!-- ## file_parser.py
 Produces graphs from running results -->
 
