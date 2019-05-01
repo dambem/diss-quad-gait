@@ -1,3 +1,4 @@
+# Runs and plots equation of dynamic similarity between mammals.
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt

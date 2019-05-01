@@ -1,3 +1,4 @@
+# The van der pol oscillator has been adapted from http://dropbearcode.blogspot.com/2012/05/python-simulation-of-van-der-pol.html
 import pybullet as p
 import numpy as np
 import time
@@ -32,6 +33,7 @@ p_v = 2
 num_iterations = 11000
 num_epochs = 1
 e_b = 999
+
 # Hip Configurations (SET, DO NOT CHANGE)start_x_foot
 front_right_hip = 1
 front_left_hip = 4

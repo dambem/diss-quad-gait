@@ -1,4 +1,5 @@
 # Necessary python modules.
+# The van der pol oscillator has been adapted from http://dropbearcode.blogspot.com/2012/05/python-simulation-of-van-der-pol.html
 import pybullet as p
 import numpy as np
 import time
@@ -7,7 +8,6 @@ import datetime
 from scipy.integrate import odeint
 import scipy.signal as signal
 import sys
-import array2latex as a2l
 
 
 def deg_to_rad(deg):
@@ -124,14 +124,12 @@ for e in range(num_epochs):
     # wId = p.addUserDebugParameter("w (Legs)",0,w,w)
     # muId = p.addUserDebugParameter("mu (Legs)", 0, mu, mu)
     # pvId = p.addUserDebugParameter("p_v (Legs)", 0, p_v, p_v)
-
     jointOffsets[1] -= -0.7
     jointOffsets[4] -= -0.7
     jointOffsets[7] -= -0.5
     jointOffsets[10] -= -0.5
-
     run_simulation = 1
-    mode = p.VELOCITY_CONTROL
+    mode = p.POSITION_CONTROL
 
     # Begins timer to allow for sin function to work (Will replace with vanderpol in future)
     for i, v in enumerate(hips):
@@ -145,10 +143,6 @@ for e in range(num_epochs):
 
     # p.useFixedBase = True
     # time.sleep(5);
-
-
-
-
     # foot_debug = deg_to_rad(180)
     # hip_debug = deg_to_rad(60)
     timer = 0
@@ -316,11 +310,6 @@ for e in range(num_epochs):
                         found = 0
                         period_foot[e,n] = end_period-start_period
 
-
-
-
-
-
             start_y_foot = new_y_foot
             start_x_foot = new_x_foot
             start_y_hip = new_y_hip
@@ -330,6 +319,7 @@ for e in range(num_epochs):
             for n in range(4):
                 oscillator_values[n].append(x_list_foot[n])
                 oscillator_values2[n].append(x_list_hip[n])
+
             for i, v in enumerate(feet):
                 realval = p.getJointState(quadruped, v)[0]
                 limb_values[i].append(realval)
@@ -362,8 +352,6 @@ for n in range(num_epochs):
     power_avg = (force_values[n]*distance_val[n])
     cost_transport[n] = power_avg/(total_mass*abs(gravity)*velocity[n])
     period_average[n] = np.mean(period_foot[n,:])
-
-
 mean_velocity = np.mean(velocity)
 std_velocity = np.std(velocity)
 mean_froude = np.mean(froude_number)
@@ -392,161 +380,3 @@ for item in saved_calc:
     string = str(item[0])+":"+str(item[1])+"\n"
     run_log.write(string)
 run_log.close()
-
-# plot = "physics2"
-if plot == "map":
-
-    plt.figure(figsize=(20,20))
-    plt.title("Path Of Robot Over Time")
-    plt.xlabel("X Direction")
-    plt.ylabel("Y Direction")
-    plt.plot(y_values, x_values)
-    plt.show()
-
-if plot == "stride":
-    plt.figure(figsize=(20,20))
-    plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
-if plot == "osc_hip":
-    plt.figure(figsize=(20,20))
-    plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
-    foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
-    hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
-    plt.title("Foot Imaginary Coupled Oscillator")
-    plt1, =plt.plot(time_array, oscillator_values[0])
-    plt2, =plt.plot(time_array, oscillator_values[1])
-    plt3, =plt.plot(time_array, oscillator_values[2])
-    plt4, =plt.plot(time_array, oscillator_values[3])
-    plt.legend([plt1, plt2, plt3, plt4], foot_labels)
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(lamb, cmap='tab10')
-    plt.title("Coupled Oscillator Coefficients")
-    ax.set_xticks(np.arange(len(foot_labels)))
-    ax.set_yticks(np.arange(len(foot_labels)))
-    ax.set_xticklabels(foot_labels)
-    ax.set_yticklabels(foot_labels)
-
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-         rotation_mode="anchor")
-    for i in range(len(foot_labels)):
-        for j in range(len(foot_labels)):
-            text = ax.text(j, i, lamb[i][j],
-                           ha="center", va="center", color="w")
-
-    plt.show()
-if plot == "oscillators":
-    plt.figure(figsize=(20,20))
-    plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
-    foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
-    hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
-    plt.subplot(3,2,1)
-    plt.title("Foot Imaginary Coupled Oscillator")
-    plt1, =plt.plot(time_array, oscillator_values[0])
-    plt2, =plt.plot(time_array, oscillator_values[1])
-    plt3, =plt.plot(time_array, oscillator_values[2])
-    plt4, =plt.plot(time_array, oscillator_values[3])
-    plt.legend([plt1, plt2, plt3, plt4], foot_labels)
-
-    plt.subplot(3,2,2)
-    plt.title("Foot Actual Limb Rotation Values")
-
-    plt1,= plt.plot(time_array, limb_values[0])
-    plt2,= plt.plot(time_array, limb_values[1])
-    plt3, =plt.plot(time_array, limb_values[2])
-    plt4, =plt.plot(time_array, limb_values[3])
-    plt.legend([plt1, plt2, plt3, plt4], ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"])
-
-
-    plt.subplot(3,2,3)
-    plt.title("Hip Imaginary Coupled Oscillator")
-    plt.xlabel("Time Step (t)")
-    plt.ylabel("X Value")
-    plt1,= plt.plot(time_array, oscillator_values2[0])
-    plt2,= plt.plot(time_array, oscillator_values2[1])
-    plt3,= plt.plot(time_array, oscillator_values2[2])
-    plt4,=plt.plot(time_array, oscillator_values2[3])
-    plt.legend([plt1, plt2, plt3, plt4], hip_labels)
-
-
-    plt.subplot(3,2,4)
-    plt.title("Hip Actual Limb Rotation Values")
-    plt1,=plt.plot(time_array, limb_values[4])
-    plt2,=plt.plot(time_array, limb_values[5])
-    plt3,=plt.plot(time_array, limb_values[6])
-    plt4,=plt.plot(time_array, limb_values[7])
-    plt.legend([plt1, plt2, plt3, plt4], ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"])
-
-    fig, ax = plt.subplots()
-    im = ax.imshow(lamb, cmap='tab20b')
-    plt.title("Coupled Oscillator Coefficients: Walking")
-    ax.set_xticks(np.arange(len(foot_labels)))
-    ax.set_yticks(np.arange(len(foot_labels)))
-    ax.set_xticklabels(foot_labels)
-    ax.set_yticklabels(foot_labels)
-    for i in range(4):
-        for j in range(4):
-            text = ax.text(j, i, lamb[i][j],
-                           ha="center", va="center", size=20, color="w")
-
-    # cbar = ax.figure.colorbar(lamb, ax=ax)
-    # cbar.ax.set_ylabel("Correlation", rotation=-90, va="bottom")
-    # plt.yticks(np.arange(0, , 1))
-    # plt.xticks(np.arange(0, , 1))
-    plt.show()
-
-
-if plot == "physics2":
-    plt.figure(figsize=(20,20))
-    # plt.subplot(1,1,1)
-    # plt.subplot(5,1,1)
-    # plt.ylim([0,20])
-    # plt.title("Cost Of Transport")
-    # plt.xlabel("Time Step (t) (Measurement taken every second)")
-    # plt.ylabel("Cost Of Transport ")
-    # plt.plot(time_array, cost_of_transport)
-    plt.subplot(3,1 ,1)
-
-    plt.title("Forces")
-    plt.ylim([0,np.max(force_array[e_b:])])
-    plt.plot(time_array[e_b:], force_array[e_b:])
-    # plt.subplot(5,1,3)
-    # plt.title("velocity")
-    # plt.ylim([0,20])
-    # plt.plot(time_array, velocity_array)
-
-
-    plt.subplot(3,1,3)
-    plt.title("distance")
-    plt.ylim([0,np.max(distance_array)])
-    plt.plot(time_array[e_b:], distance_array[e_b:])
-    #
-    # plt.subplot(4,1,4)
-    # plt.title("Displacement Array")
-    # plt.scatter(displacement_array, force_array)
-    plt.show()
-if plot == "physics":
-    plt.figure(figsize=(15,15))
-    plt.subplot(3, 3, 1)
-
-    plt.subplot(3, 3, 3)
-    plt.title("Turn in X Over Time")
-    plt.plot(time_array, turn_array)
-
-    plt.ylabel("X Value")
-    plt.xlabel("Time Step (t)")
-    plt.subplot(3, 3, 4)
-    plt.title("X Rotation Over Time")
-    plt.plot(time_array, x_tilt_array)
-    plt.ylabel("X Rotation")
-    plt.xlabel("Time Step (t)")
-    plt.subplot(3, 3, 5)
-    plt.title("Y Rotation Over Time")
-    plt.plot(time_array, y_tilt_array)
-    plt.ylabel("Y Value")
-    plt.xlabel("Time Step (t)")
-    plt.subplot(3, 3, 6)
-
-    plt.ylabel("Z Value")
-    plt.xlabel("Time Step (t)")
-    plt.savefig(run_name, dpi=250)
-    plt.show()

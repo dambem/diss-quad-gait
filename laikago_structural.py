@@ -1,3 +1,5 @@
+# The van der pol oscillator has been adapted from http://dropbearcode.blogspot.com/2012/05/python-simulation-of-van-der-pol.html
+
 import pybullet as p
 import numpy as np
 import time
@@ -393,7 +395,6 @@ tavg_hip = (ttest5[0]+ttest6[0]+ttest7[0]+ttest8[0])/4
 
 print(tavg_foot)
 print(pavg_foot)
-
 print(tavg_hip)
 print(pavg_hip)
 for n in range(num_epochs):

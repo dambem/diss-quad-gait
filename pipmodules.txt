@@ -2,3 +2,5 @@ numpy == 1.16.0
 pybullet == 2.4.1
 matplotlib == 3.0.3
 scipy == 1.2.1
+sklearn == 0.0
+pandas == 0.24.2

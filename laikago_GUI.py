@@ -28,7 +28,7 @@ van_multi = 0.1
 
 mu = 1
 p_v = 2
-num_iterations = 100000
+num_iterations = 10000
 num_epochs = 1
 e_b = 999
 # Hip Configurations (SET, DO NOT CHANGE)start_x_foot
@@ -334,3 +334,115 @@ for e in range(num_epochs):
             p.stepSimulation()
     # p.resetSimulation()
     # p.setRealTimeSimulation(1)
+
+plot = "oscillator_gait"
+if plot == "map":
+    plt.figure(figsize=(20,20))
+    plt.title("Path Of Robot Over Time")
+    plt.xlabel("X Direction")
+    plt.ylabel("Y Direction")
+    plt.plot(y_values, x_values)
+    plt.show()
+
+if plot == "oscillator_gait":
+    plt.figure(figsize=(20,20))
+    plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
+    plt.xlabel("Time t")
+    plt.ylabel("Oscillator output x")
+    plt.title("Coupled Oscillator Gait Bounding")
+    foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
+    plt1, =plt.plot(time_array[0], oscillator_values[0])
+    plt2, =plt.plot(time_array[0], oscillator_values[1], linestyle="--")
+    plt3, =plt.plot(time_array[0], oscillator_values[2])
+    plt4, =plt.plot(time_array[0], oscillator_values[3], linestyle="--")
+    plt.legend([plt1, plt2, plt3, plt4], foot_labels)
+    plt.show()
+
+if plot == "oscillators":
+    plt.figure(figsize=(20,20))
+    plt.subplots_adjust(hspace=0.5, left=0.05, right=0.95)
+    foot_labels = ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"]
+    hip_labels = ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"]
+    plt.subplot(3,2,1)
+    plt.title("Foot Imaginary Coupled Oscillator")
+    plt1, =plt.plot(time_array, oscillator_values[0])
+    plt2, =plt.plot(time_array, oscillator_values[1])
+    plt3, =plt.plot(time_array, oscillator_values[2])
+    plt4, =plt.plot(time_array, oscillator_values[3])
+    plt.legend([plt1, plt2, plt3, plt4], foot_labels)
+
+    plt.subplot(3,2,2)
+    plt.title("Foot Actual Limb Rotation Values")
+
+    plt1,= plt.plot(time_array, limb_values[0])
+    plt2,= plt.plot(time_array, limb_values[1])
+    plt3, =plt.plot(time_array, limb_values[2])
+    plt4, =plt.plot(time_array, limb_values[3])
+    plt.legend([plt1, plt2, plt3, plt4], ["Front Right Foot", "Back Right Foot", "Front Left Foot", "Back Left Foot"])
+
+
+    plt.subplot(3,2,3)
+    plt.title("Hip Imaginary Coupled Oscillator")
+    plt.xlabel("Time Step (t)")
+    plt.ylabel("X Value")
+    plt1,= plt.plot(time_array, oscillator_values2[0])
+    plt2,= plt.plot(time_array, oscillator_values2[1])
+    plt3,= plt.plot(time_array, oscillator_values2[2])
+    plt4,=plt.plot(time_array, oscillator_values2[3])
+    plt.legend([plt1, plt2, plt3, plt4], hip_labels)
+
+
+    plt.subplot(3,2,4)
+    plt.title("Hip Actual Limb Rotation Values")
+    plt1,=plt.plot(time_array, limb_values[4])
+    plt2,=plt.plot(time_array, limb_values[5])
+    plt3,=plt.plot(time_array, limb_values[6])
+    plt4,=plt.plot(time_array, limb_values[7])
+    plt.legend([plt1, plt2, plt3, plt4], ["Front Right Hip", "Back Right Hip", "Front Left Hip", "Back Left Hip"])
+
+    fig, ax = plt.subplots()
+    im = ax.imshow(lamb, cmap='tab20b')
+    plt.title("Coupled Oscillator Coefficients: Walking")
+    ax.set_xticks(np.arange(len(foot_labels)))
+    ax.set_yticks(np.arange(len(foot_labels)))
+    ax.set_xticklabels(foot_labels)
+    ax.set_yticklabels(foot_labels)
+    for i in range(4):
+        for j in range(4):
+            text = ax.text(j, i, lamb[i][j],
+                           ha="center", va="center", size=20, color="w")
+    plt.show()
+
+if plot == "physics2":
+    plt.figure(figsize=(20,20))
+    plt.subplot(3,1 ,1)
+    plt.title("Forces")
+    plt.ylim([0,np.max(force_array[e_b:])])
+    plt.plot(time_array[e_b:], force_array[e_b:])
+    plt.subplot(3,1,3)
+    plt.title("distance")
+    plt.ylim([0,np.max(distance_array)])
+    plt.plot(time_array[e_b:], distance_array[e_b:])
+    plt.show()
+if plot == "physics":
+    plt.figure(figsize=(15,15))
+    plt.subplot(3, 3, 3)
+    plt.title("Turn in X Over Time")
+    plt.plot(time_array, turn_array)
+    plt.ylabel("X Value")
+    plt.xlabel("Time Step (t)")
+    plt.subplot(3, 3, 4)
+    plt.title("X Rotation Over Time")
+    plt.plot(time_array, x_tilt_array)
+    plt.ylabel("X Rotation")
+    plt.xlabel("Time Step (t)")
+    plt.subplot(3, 3, 5)
+    plt.title("Y Rotation Over Time")
+    plt.plot(time_array, y_tilt_array)
+    plt.ylabel("Y Value")
+    plt.xlabel("Time Step (t)")
+    plt.subplot(3, 3, 6)
+    plt.ylabel("Z Value")
+    plt.xlabel("Time Step (t)")
+    plt.savefig(run_name, dpi=250)
+    plt.show()

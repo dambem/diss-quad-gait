@@ -1,4 +1,6 @@
 # Produces a Van Der Pol Oscillator
+# Code initially based on http://dropbearcode.blogspot.com/2012/05/python-simulation-of-van-der-pol.htm
+
 import time
 import numpy as np
 import matplotlib.pyplot as plt

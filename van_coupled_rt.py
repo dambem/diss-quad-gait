@@ -2,6 +2,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
+# The van der pol oscillator has been adapted from http://dropbearcode.blogspot.com/2012/05/python-simulation-of-van-der-pol.html
 
 # l - coupling coefficient
 l = 0.1
